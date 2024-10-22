@@ -24,6 +24,15 @@ def generate_launch_description():
     x_pose = LaunchConfiguration('x_pose', default='0.0')
     y_pose = LaunchConfiguration('y_pose', default='0.0')
 
+    # # Launch configuration variables for the Gazbeo world
+    # world_name = LaunchConfiguration('world_name', default='4x4m_empty.world')
+
+    # # Declare launch arguments for world name
+    # declare_world_name_cmd = DeclareLaunchArgument(
+    #     'world_name', default_value='4x4m_empty.world',
+    #     description='World file to load in Gazebo from robot-common-sim'
+    # )
+
     # Declare launch arguments for the spawn position
     declare_x_position_cmd = DeclareLaunchArgument(
         'x_pose', default_value='0.0',
@@ -35,11 +44,14 @@ def generate_launch_description():
         description='Y position of the robot'
     )
 
-    # Include your Gazebo launch file
+    # Include your Gazebo launch file and pass the world name argument
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('robot-common-sim'), 'launch', 'gazebo_sim.launch.py') 
-        )
+        ),
+        # launch_arguments={
+        #     'world_name': world_name  # Forward the world_name argument to the included launch file
+        # }.items()
     )
 
     # Node to spawn the TurtleBot3 in Gazebo
@@ -60,9 +72,10 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Add launch options and actions
+    # ld.add_action(declare_world_name_cmd)
     ld.add_action(declare_x_position_cmd)
     ld.add_action(declare_y_position_cmd)
-    ld.add_action(gazebo_launch)  # Include your Gazebo launch file
-    ld.add_action(spawn_turtlebot_cmd)  # Then spawn the TurtleBot3
+    ld.add_action(gazebo_launch)  # Gazebo launch file
+    ld.add_action(spawn_turtlebot_cmd)  # spawn TurtleBot3
 
     return ld
