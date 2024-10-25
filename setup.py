@@ -12,6 +12,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', glob.glob('launch/*.launch.py')),
+        ('share/' + package_name + '/urdf', glob.glob('urdf/*.xacro')),
+        ('share/' + package_name + '/meshes', glob.glob('meshes/*/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
