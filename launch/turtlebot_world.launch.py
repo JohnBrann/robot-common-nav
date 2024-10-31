@@ -15,7 +15,7 @@ def generate_launch_description():
 
     # Declare launch argument for the world name
     world_arg = DeclareLaunchArgument(
-        'world_name',
+        'world',
         default_value=os.path.join(pkg_robot_common_sim, 'worlds', '4x4m_empty.world'),
     )
 
@@ -40,7 +40,7 @@ def generate_launch_description():
             os.path.join(pkg_turtlebot3_gazebo, 'launch', 'turtlebot3_world.launch.py')
         ),
         launch_arguments={
-            'world': LaunchConfiguration('world_name'),
+            'world': LaunchConfiguration('world'),
             'use_sim_time': LaunchConfiguration('use_sim_time'),
             'x_pose': LaunchConfiguration('x_pose'),
             'y_pose': LaunchConfiguration('y_pose')
