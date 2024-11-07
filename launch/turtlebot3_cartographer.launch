@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Declare launch arguments -->
+    <arg name="world" default="4x4m_empty.world" description="Name of gazebo world to load"/>
+    <arg name="use_sim_time" default="true" description="use_sim_time or not"/>
+    <arg name="x_pose" default="-1.8" description="X position of the robot"/>
+    <arg name="y_pose" default="-1.8" description="Y position of the robot"/>
+    <arg name="model" default="burger" description="TurtleBot3 Model"/>
+    <!-- Define the model path based on the model argument -->
+    <let name="model_path" value="turtlebot3_$(var model)"/>
+    <let name="robot_state_publisher_model" value="$(var model_path).urdf"/>
+
+    <!-- Include Gazebo launch file and pass arguments -->
+    <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch.py">
+        <arg name="world" value="$(var world)"/>
+        <arg name="use_sim_time" value="$(var use_sim_time)"/>
+        <arg name="x_pose" value="$(var x_pose)"/>
+        <arg name="y_pose" value="$(var y_pose)"/>
+        <arg name="model" value="$(var model)"/>
+        <arg name="model_path" value="$(var model_path)"/>
+    </include>
+
+    <!-- Include RViz Cartographer launch file, passing model and model path if needed -->
+    <include file="$(find-pkg-share turtlebot3_cartographer)/launch/cartographer.launch.py">
+        <arg name="model" value="$(var model)"/>
+        <arg name="model_path" value="$(var model_path)"/>
+    </include>
+</launch>
