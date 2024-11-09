@@ -9,21 +9,17 @@
 
     <!-- Robot model specific arguments -->
     <arg name="model" default="burger" description="TurtleBot3 Model"/>
-    <let name="model_path" value="turtlebot3_$(var model)"/>
-    <let name="robot_state_publisher_model" value="$(var model_path).urdf"/>
-    <let name="tb3_param_dir" value="$(var model).yaml"/>
 
     <!-- Check if running simulation or not-->
     <!-- <group if="$(eval var('simulation') == 'true')"> -->
     <group if="$(var simulation)">
         <!-- Include Gazebo launch file and pass arguments if running in simulation -->
-        <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch.py">
+        <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch">
             <arg name="world" value="$(var world)"/>
             <arg name="use_sim_time" value="$(var use_sim_time)"/>
             <arg name="x_pose" value="$(var x_pose)"/>
             <arg name="y_pose" value="$(var y_pose)"/>
             <arg name="model" value="$(var model)"/>
-            <arg name="model_path" value="$(var model_path)"/>
         </include>
     </group>
 
@@ -32,8 +28,6 @@
         <include file="$(find-pkg-share turtlebot3_bringup)/launch/robot.launch.py">
             <arg name="model" value="$(var model)"/>
             <arg name="use_sim_time" value="false"/>
-            <arg name="tb3_param_dir" value="$(var tb3_param_dir)"/>
-            <arg name="robot_state_publisher_model" value="$(var robot_state_publisher_model)"/>
         </include>
     </group>
 
