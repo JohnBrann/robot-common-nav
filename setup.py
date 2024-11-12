@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 import glob
 
-package_name = 'robot-common-nav'
+package_name = 'robot_common_nav'
 
 setup(
     name=package_name,
@@ -24,6 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'waypoint_navigator = robot_common_nav.waypoint_navigator:main'
         ],
     },
 )
