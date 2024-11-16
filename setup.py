@@ -24,7 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'waypoint_navigator = robot_common_nav.waypoint_navigator:main'
+            'waypoint_navigator = robot_common_nav.waypoint_navigator:main',
+            'waypoint_client = robot_common_nav.waypoint_client:main',
         ],
     },
 )
