@@ -1,0 +1,4 @@
+geometry_msgs/Pose pose
+string reference_frame_id
+---
+string result
