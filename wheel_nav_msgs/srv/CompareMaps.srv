@@ -1,0 +1,4 @@
+
+---
+bool is_aligned
+float32 alignment_score # Score indicating alignment percentage of costmap with actual map

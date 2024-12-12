@@ -39,9 +39,6 @@
     </include>
 
     <node pkg="wheel_nav" exec="waypoint_navigator" name="waypoint_navigator" output="screen"></node>
-    <!-- <node pkg="wheel_nav" exec="set_init_pose" name="set_init_pose" output="screen">
-        <param name="x_pose" value="$(var x_pose)"/>
-        <param name="y_pose" value="$(var x_pose)"/>
-    </node> -->
+    <!-- <node pkg="wheel_nav" exec="map_comparison" name="map_comparison" output="screen"></node> -->
 
 </launch>

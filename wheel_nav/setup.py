@@ -28,6 +28,7 @@ setup(
             'waypoint_client = wheel_nav.waypoint_client:main',
             'simple_nav_bt = wheel_nav.simple_nav_bt:main',
             'patrol_a_bt = wheel_nav.patrol_a_bt:main',
+            'map_comparison = wheel_nav.map_comparison:main',
         ],
     },
 )
