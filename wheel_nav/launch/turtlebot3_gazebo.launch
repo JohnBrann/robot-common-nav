@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Declare launch arguments -->
+    <arg name="world" default="4x4m_empty.world" description="Name of gazebo world to load"/>
+    <arg name="map" default="nerve_218_nav_area.yaml" description="Name of rviz map to load"/>
+    <arg name="use_sim_time" default="true" description="use_sim_time or not"/>
+    <arg name="x_pose" default="-1.8" description="X position of the robot"/>
+    <arg name="y_pose" default="-1.8" description="Y position of the robot"/>
+    <arg name="simulation" default="true" description="Set to 'true' if using  simulation, 'false' for real robot"/>
+    <arg name="model" default="burger" description="Turtlebot3 Model"/>
+   
+    <group if="$(var simulation)">
+        <!-- Include Gazebo launch file and pass arguments if running in simulation -->
+        <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch">
+            <arg name="world" value="$(var world)"/>
+            <arg name="use_sim_time" value="$(var use_sim_time)"/>
+            <arg name="x_pose" value="$(var x_pose)"/>
+            <arg name="y_pose" value="$(var y_pose)"/>
+            <arg name="model" value="$(var model)"/>
+        </include>
+    </group>
+
+    <node pkg="wheel_nav" exec="rl_step" name="rl_step" output="screen"></node>
+</launch>

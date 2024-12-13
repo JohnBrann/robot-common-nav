@@ -13,6 +13,7 @@ find_package(rosidl_default_generators REQUIRED)
 # Generate interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Waypoint.srv"
+  "srv/Step.srv"
   DEPENDENCIES geometry_msgs
 )
 

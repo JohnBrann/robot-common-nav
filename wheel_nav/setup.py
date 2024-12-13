@@ -28,6 +28,9 @@ setup(
             'waypoint_client = wheel_nav.waypoint_client:main',
             'simple_nav_bt = wheel_nav.simple_nav_bt:main',
             'patrol_a_bt = wheel_nav.patrol_a_bt:main',
+            'rl_state = wheel_nav.rl_state:main',
+            'rl_step = wheel_nav.rl_step_service:main',
+            'reward = wheel_nav.reward:main',
         ],
     },
 )
