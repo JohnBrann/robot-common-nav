@@ -22,10 +22,16 @@ class StepService(Node):
         self.current_goal_pos = np.array([-1.0, -1.0])
         self.current_pos = np.array([0, 0])
         self.current_yaw = 0
+
+        self.linear_x = 0
+        self.angular_z = 0
         
         self.scan_data = []
         # large value to compare with first lidar data
         self.min_obstacle_distance = 100
+
+        self.reached_waypoint = False
+        self.terminated = False
         
         self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.scan_subscriber = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
@@ -47,8 +53,13 @@ class StepService(Node):
         response.angle_to_goal = self.calc_angle_to_goal(self.current_yaw)
         response.scan_data = self.scan_data
         response.min_obstacle_distance = self.min_obstacle_distance
+        response.linear_velocity = self.linear_x
+        response.angular_velocity = self.angular_z
+        response.terminated = self.terminated 
+        response.reached_waypoint = self.reached_waypoint
 
-        response.reward = rw.calc_reward(response.distance_to_goal, 2.82, response.angle_to_goal, self.min_obstacle_distance)
+        response.reward = rw.calc_reward(response.distance_to_goal, 2.82, response.angle_to_goal, self.min_obstacle_distance, 
+                                         self.reached_waypoint, self.terminated, self.linear_x, self.angular_z)
         
         return response
     
@@ -59,6 +70,9 @@ class StepService(Node):
         current_x = position.x
         current_y = position.y
         self.current_pos = np.array([current_x, current_y])
+        
+        self.linear_x = msg.twist.twist.linear.x
+        self.angular_z = msg.twist.twist.angular.z
 
         # Current yaw (orientation)
         orientation = msg.pose.pose.orientation
@@ -96,6 +110,9 @@ class StepService(Node):
     def calc_distance_to_goal(self):
         # Use the euclidean distance formula to find the current distance from the goal         
         self.distance_to_goal = np.sqrt(np.sum((self.current_pos - self.current_goal_pos)**2))
+        if self.distance_to_goal < 0.1:
+            self.reached_waypoint = True
+
         return self.distance_to_goal
     
     
