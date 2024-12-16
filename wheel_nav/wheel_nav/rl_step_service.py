@@ -30,7 +30,7 @@ class StepService(Node):
         # large value to compare with first lidar data
         self.min_obstacle_distance = 100
 
-        self.reached_waypoint = False
+        self.success= False
         self.terminated = False
         
         self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
@@ -56,10 +56,10 @@ class StepService(Node):
         response.linear_velocity = self.linear_x
         response.angular_velocity = self.angular_z
         response.terminated = self.terminated 
-        response.reached_waypoint = self.reached_waypoint
+        response.success= self.success
 
         response.reward = rw.calc_reward(response.distance_to_goal, 2.82, response.angle_to_goal, self.min_obstacle_distance, 
-                                         self.reached_waypoint, self.terminated, self.linear_x, self.angular_z)
+                                         self.success, self.terminated, self.linear_x, self.angular_z)
         
         return response
     
@@ -111,7 +111,7 @@ class StepService(Node):
         # Use the euclidean distance formula to find the current distance from the goal         
         self.distance_to_goal = np.sqrt(np.sum((self.current_pos - self.current_goal_pos)**2))
         if self.distance_to_goal < 0.1:
-            self.reached_waypoint = True
+            self.success= True
 
         return self.distance_to_goal
     

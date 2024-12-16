@@ -31,6 +31,7 @@ setup(
             'rl_state = wheel_nav.rl_state:main',
             'rl_step = wheel_nav.rl_step_service:main',
             'reward = wheel_nav.reward:main',
+            'agent = wheel_nav.agent:main',
         ],
     },
 )
