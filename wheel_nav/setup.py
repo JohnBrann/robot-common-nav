@@ -32,6 +32,9 @@ setup(
             'rl_step = wheel_nav.rl_step_service:main',
             'reward = wheel_nav.reward:main',
             'agent = wheel_nav.agent:main',
+            "blackboard_test = wheel_nav.blackboard_test:main",
+            'step_publisher = wheel_nav.step_publisher:main',
+            'rl_bt = wheel_nav.rl_bt:main',
         ],
     },
 )

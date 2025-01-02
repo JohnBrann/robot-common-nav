@@ -7,11 +7,16 @@
   <maintainer email="john.brann4315@gmail.com">csrobot</maintainer>
   <license>TODO: License declaration</license>
 
+  <!-- Dependencies -->
+  <depend>wheel_nav_msgs</depend>
+
+  <!-- Testing dependencies -->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 
+  <!-- Export information -->
   <export>
     <build_type>ament_python</build_type>
   </export>

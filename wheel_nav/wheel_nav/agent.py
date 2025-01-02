@@ -2,6 +2,8 @@ import rclpy
 from rclpy.node import Node
 from wheel_nav_msgs.srv import Step
 
+import time
+
 class Agent(Node):
     def __init__(self):
         super().__init__('agent')
@@ -12,13 +14,12 @@ class Agent(Node):
             self.get_logger().info("Waiting for the Step service to become available...")
 
         self.max_episodes = 50
-        self.max_steps = 2000
+        self.max_steps = 100
 
-        # Timer to handle steps every 0.25 seconds
-        # self.timer = self.create_timer(0.25, self.step_timer_callback)
 
     def run(self):
         for episode in range(self.max_episodes):
+            # reset env_info, such as success, reward, terminated, turtlebot location (only on terminated or truncated)
             # Initialize environment
             terminated = False
             step_count = 0
@@ -36,19 +37,13 @@ class Agent(Node):
                 reward = env_info.reward
                 terminated = env_info.terminated
                 success = env_info.success
-                # self.get_logger().info(f'Step {step_count} reward: {reward}')
 
                 # Train
                 episode_reward += reward
                 step_count += 1
+                time.sleep(0.2)
 
             self.get_logger().info(f'Episode {episode} reward {episode_reward}')
-
-            # if success:
-            #     self.get_logger().info(f'SUCCESS! Episode {episode} reward {episode_reward}')
-            # elif terminated:
-            #     self.get_logger().info(f'FAILURE! Episode {episode} reward {episode_reward}')
-            
 
     def step_request(self):
         req = Step.Request()

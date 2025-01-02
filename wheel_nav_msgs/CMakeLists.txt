@@ -10,11 +10,19 @@ find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+
 # Generate interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Waypoint.srv"
   "srv/Step.srv"
+  "msg/StepData.msg"
   DEPENDENCIES geometry_msgs
+)
+
+# Install the config directory
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 if(BUILD_TESTING)
