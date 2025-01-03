@@ -12,6 +12,12 @@ from wheel_nav.calculate_reward import CalcReward
 
 from wheel_nav.discrete_action_state import DiscreteActionState
 from wheel_nav.continuous_action_state import ContinuousActionState
+from wheel_nav.reset_env_success import ResetEnvSuccess
+
+from wheel_nav.episode_success_state import EpisodeSuccessState
+from wheel_nav.episode_failure_state import EpisodeFailureState
+from wheel_nav.episode_running_state import EpisodeRunningState
+
 
 class RlBehaviorTree(Node):
     def __init__(self):
@@ -30,6 +36,29 @@ class RlBehaviorTree(Node):
         self.create_behavior_tree()
         
     def create_behavior_tree(self):
+
+        # Reset Env
+        reset_env_success = ResetEnvSuccess(self, "reset_env_state")
+
+        # Success State
+        success_state = EpisodeSuccessState(self, "episode_success_state")
+        success_state_sequence = py_trees.composites.Sequence("Success State Sequence", memory=True)
+        success_state_sequence.add_children([success_state, reset_env_success])
+
+        # Terminated State 
+        terminated_state = EpisodeFailureState(self, "episode_terminated_state")
+        terminated_state_sequence = py_trees.composites.Sequence("Terminated State Sequence", memory=True)
+        terminated_state_sequence.add_children([terminated_state])
+
+        # In Progress State (Not terminated or Success)
+        runnning_state = EpisodeRunningState(self, "episode_running_state")
+        running_state_sequence = py_trees.composites.Sequence("Running State Sequence", memory=True)
+        running_state_sequence.add_children([runnning_state])
+
+        episode_state = py_trees.composites.Selector("Episode State", memory=True)
+        episode_state.add_children([success_state_sequence, terminated_state_sequence, running_state_sequence])
+
+
         # Training Behaviors
         select_action_discrete = SelectDiscreteAction(self, "select_discrete_action")
         select_action_continuous = SelectContinuousAction(self, "select_continuous_action")
@@ -60,7 +89,7 @@ class RlBehaviorTree(Node):
 
         # Training Sequence (sequentially execute action and reward calculation)
         training_seq = py_trees.composites.Sequence("Training Sequence", memory=True)
-        training_seq.add_children([action_type, data_sequence, optimization_sequence]) 
+        training_seq.add_children([action_type, data_sequence, episode_state, optimization_sequence]) 
 
         # end_of_episodes_sequence = py_trees.composites("End of Epsiode Handing", memory=True)
         # end_of_episodes_sequence.add_children([episode_state])
@@ -105,6 +134,12 @@ class RlBehaviorTree(Node):
         Add reward to the current episode's total reward.
         """
         self.step_count += 1
+
+    def reset_step_count(self):
+        """
+        Reset the step count to 0
+        """
+        self.step_count = 0
 
 
 
