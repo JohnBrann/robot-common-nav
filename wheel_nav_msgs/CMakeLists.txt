@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Waypoint.srv"
   "srv/Step.srv"
   "msg/StepData.msg"
+  "msg/GoalPosition.msg"
   DEPENDENCIES geometry_msgs
 )
 
