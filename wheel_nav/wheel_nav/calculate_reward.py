@@ -78,4 +78,4 @@ class CalcReward(py_trees.behaviour.Behaviour):
         """
         # Extract reward from the message
         self.reward = msg.reward
-        self.node.get_logger().info(f"Received reward: {self.reward}")
+        self.node.get_logger().info(f"Received step reward: {self.reward}")

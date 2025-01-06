@@ -57,6 +57,9 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
 
+        # if self.node.episode_truncated():
+        #     self.episode_failure = True
+
         if self.episode_failure:
             self.node.get_logger().info(f"Episode was a failure")
             return py_trees.common.Status.SUCCESS
@@ -78,6 +81,6 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
         Args:
             msg (StepData): The incoming message containing the reward.
         """
-        # Extract reward from the message
-        self.episode_success = msg.terminated # truncated? get step_count
+        # Episode success or failure
+        self.episode_failure = msg.terminated # truncated? get step_count
         # self.node.get_logger().info(f"Received reward: {self.reward}")

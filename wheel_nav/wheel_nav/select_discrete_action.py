@@ -16,8 +16,8 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-        self.epsilon = 0.2
-        self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10)
+        self.epsilon = 0.0 # 0 for testing purposes
+        self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10) # make this into a service call? seperate into another behavior?
         
 
     def setup(self):
@@ -40,19 +40,27 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        In the future, this will check the discrete or continuous parameter, or there will be another ndoe just for the discrete parameter
+        Selects a discrete action, exploration and exploitation
         
         Returns:
-            py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
+            py_trees.common.Status: SUCCESS if action is selected, FAILURE otherwise
         """
+
+        # state = self.node.get_current_state() # from topic???? or bt?
+
+        # convert state to tensor
+
 
         discrete_actions = [0, 1, 2, 3, 4]
 
         if random.random() < self.epsilon:
             selected_action = random.choice(discrete_actions)
+            self.node.get_logger().info(f"Random Action Selected...")
         else:
             # select action from the NN
+
             selected_action = 2
+            self.node.get_logger().info(f"Action Selected by NN...")
 
         # selected_action = 2
 
