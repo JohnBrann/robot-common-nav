@@ -91,11 +91,16 @@ class StepPublisher(Node):
 
     def lidar_callback(self, msg):
         total_ranges = len(msg.ranges)
-        num_of_laser = 4
+        num_of_laser = 12
         step = total_ranges // num_of_laser
         selected_ranges = [msg.ranges[i] for i in range(0, total_ranges, step)][:num_of_laser]
-
+        # Calculates the minimum distance to a an obstacle from lidar data
         self.min_obstacle_distance = min(selected_ranges, default=10)
+        # If robot is too close to an obstacle, result in termination
+        if self.min_obstacle_distance < 0.2:
+            self.terminated = True
+        else:
+            self.terminated = False
         self.scan_data = selected_ranges
         self.scan_initialized = True
 
