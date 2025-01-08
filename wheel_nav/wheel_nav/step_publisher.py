@@ -42,7 +42,7 @@ class StepPublisher(Node):
         self.publisher = self.create_publisher(StepData, 'step_data', 10)
 
         # Timer for publishing data
-        self.timer = self.create_timer(0.2, self.publish_data)  # Publish every 0.2 seconds, this just depends how fast we want the data to be published, my guess is 0.2 seconds is completely reasonable
+        self.timer = self.create_timer(0.1, self.publish_data)  # Publish every 0.2 seconds, this just depends how fast we want the data to be published, my guess is 0.2 seconds is completely reasonable
 
     def publish_data(self):
         if not self.odom_initialized or not self.scan_initialized:

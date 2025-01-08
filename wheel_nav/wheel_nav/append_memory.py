@@ -25,16 +25,13 @@ class AppendMemory(py_trees.behaviour.Behaviour):
         self.terminated = None
         self.reward = None
 
-        # Initialize the reward variable
-        self.reward = None
-
         # Subscribe to the StepData topic
-        self.subscription = self.node.create_subscription(
-            StepData,
-            'step_data',
-            self.listener_callback,
-            10
-        )
+        # self.subscription = self.node.create_subscription(
+        #     StepData,
+        #     'step_data',
+        #     self.listener_callback,
+        #     10
+        # )
         # self.subscription  # prevent unused variable warning # do we need? 
 
     def setup(self):
@@ -59,14 +56,14 @@ class AppendMemory(py_trees.behaviour.Behaviour):
         """
 
         self.node.memory.append((
-            self.distance_to_goal,
-            self.angle_to_goal,
-            self.scan_data,
-            self.min_obstacle_distance,
-            self.angular_velocity,
-            self.linear_velocity,
-            self.terminated,
-            self.reward
+            self.node.distance_to_goal,
+            self.node.angle_to_goal,
+            self.node.scan_data,
+            self.node.min_obstacle_distance,
+            self.node.angular_velocity,
+            self.node.linear_velocity,
+            self.node.terminated,
+            self.node.reward
         ))
 
         # sample = self.node.memory.sample(1) 
@@ -83,19 +80,19 @@ class AppendMemory(py_trees.behaviour.Behaviour):
         # if new_status != py_trees.common.Status.RUNNING:
         #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
 
-    def listener_callback(self, msg):
-        """
-        Callback to get data to append to memory
+    # def listener_callback(self, msg):
+    #     """
+    #     Callback to get data to append to memory
         
-        Args:
-            msg (StepData): The incoming message containing the reward.
-        """
+    #     Args:
+    #         msg (StepData): The incoming message containing the reward.
+    #     """
 
-        self.distance_to_goal = msg.distance_to_goal
-        self.angle_to_goal = msg.angle_to_goal
-        self.scan_data = msg.scan_data
-        self.min_obstacle_distance = msg.min_obstacle_distance
-        self.angular_velocity = msg.angular_velocity
-        self.linear_velocity = msg.linear_velocity
-        self.terminated = msg.terminated
-        self.reward = msg.reward
+    #     self.distance_to_goal = msg.distance_to_goal
+    #     self.angle_to_goal = msg.angle_to_goal
+    #     self.scan_data = msg.scan_data
+    #     self.min_obstacle_distance = msg.min_obstacle_distance
+    #     self.angular_velocity = msg.angular_velocity
+    #     self.linear_velocity = msg.linear_velocity
+    #     self.terminated = msg.terminated
+    #     self.reward = msg.reward

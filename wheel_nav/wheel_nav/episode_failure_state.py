@@ -21,12 +21,12 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
         self.episode_failure = None
 
         # Subscribe to the StepData topic
-        self.subscription = self.node.create_subscription(
-            StepData,
-            'step_data',
-            self.listener_callback,
-            10
-        )
+        # self.subscription = self.node.create_subscription(
+        #     StepData,
+        #     'step_data',
+        #     self.listener_callback,
+        #     10
+        # )
         # self.subscription  # prevent unused variable warning # do we need? 
         
 
@@ -51,7 +51,7 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Check the episode was a failure
+        Check the episode was a failure, we will also check for a truncation but a termiantion is fien for now
         
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
@@ -59,7 +59,7 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
 
         # if self.node.episode_truncated():
         #     self.episode_failure = True
-
+        self.episode_failure = self.node.terminated
         if self.episode_failure:
             self.node.get_logger().info(f"Episode was a failure")
             return py_trees.common.Status.SUCCESS
@@ -74,13 +74,13 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
         """
         # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
-    def listener_callback(self, msg):
-        """
-        Callback to handle incoming messages and extract episode data.
+    # def listener_callback(self, msg):
+    #     """
+    #     Callback to handle incoming messages and extract episode data.
         
-        Args:
-            msg (StepData): The incoming message containing the reward.
-        """
-        # Episode success or failure
-        self.episode_failure = msg.terminated # truncated? get step_count
-        # self.node.get_logger().info(f"Received reward: {self.reward}")
+    #     Args:
+    #         msg (StepData): The incoming message containing the reward.
+    #     """
+    #     # Episode success or failure
+    #     self.episode_failure = msg.terminated # truncated? get step_count
+    #     # self.node.get_logger().info(f"Received reward: {self.reward}")

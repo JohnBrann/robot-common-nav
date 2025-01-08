@@ -40,14 +40,19 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
         try:
             # Publish reset state data
             reset_state = StepData()
-            reset_state.linear_velocity = 0.0
-            reset_state.angular_velocity = 0.0
+            # reset_state.linear_velocity = 0.0
+            # reset_state.angular_velocity = 0.0
             reset_state.success = False
             reset_state.terminated = False
             reset_state.reward = 0.0
             self.publisher.publish(reset_state)
 
             self.node.reset_step_count()
+            self.node.add_to_episode_count()
+            current_episode = self.node.get_current_episode()
+            episode_reward = self.node.get_current_episode_reward()
+            self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
+
             self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS
 

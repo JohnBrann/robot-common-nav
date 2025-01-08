@@ -21,12 +21,12 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         self.episode_success = None
 
         # Subscribe to the StepData topic
-        self.subscription = self.node.create_subscription(
-            StepData,
-            'step_data',
-            self.listener_callback,
-            10
-        )
+        # self.subscription = self.node.create_subscription(
+        #     StepData,
+        #     'step_data',
+        #     self.listener_callback,
+        #     10
+        # )
         # self.subscription  # prevent unused variable warning # do we need? 
         
 
@@ -56,7 +56,7 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-
+        self.episode_success = self.node.success
         if self.episode_success:
             self.node.get_logger().info(f"Episode was a Success")
             return py_trees.common.Status.SUCCESS
@@ -71,13 +71,13 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         """
         # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
-    def listener_callback(self, msg):
-        """
-        Callback to handle incoming messages and extract episode data.
+    # def listener_callback(self, msg):
+    #     """
+    #     Callback to handle incoming messages and extract episode data.
         
-        Args:
-            msg (StepData): The incoming message containing the reward.
-        """
-        # Extract reward from the message
-        self.episode_success = msg.success
-        # self.node.get_logger().info(f"Received reward: {self.reward}")
+    #     Args:
+    #         msg (StepData): The incoming message containing the reward.
+    #     """
+    #     # Extract reward from the message
+    #     self.episode_success = msg.success
+    #     # self.node.get_logger().info(f"Received reward: {self.reward}")

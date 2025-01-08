@@ -4,7 +4,7 @@ import py_trees_ros
 
 from wheel_nav_msgs.msg import StepData
 
-class CalcReward(py_trees.behaviour.Behaviour):
+class StepTimer(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
         """
         Initialize the condition node with a reference to the ROS 2 node
@@ -16,17 +16,11 @@ class CalcReward(py_trees.behaviour.Behaviour):
         super().__init__(name)
         self.node = node
 
-        # Initialize the reward variable
-        self.reward = None
+        # Initialize the timer
+        self.time_limit_reached = False
 
-        # Subscribe to the StepData topic
-        # self.subscription = self.node.create_subscription(
-        #     StepData,
-        #     'step_data',
-        #     self.listener_callback,
-        #     10
-        # )
-        # self.subscription  # prevent unused variable warning # do we need? 
+        self.timer = self.node.create_timer(0.2, self.timer_callback) # 1.0 is the period in seconds
+
 
     def setup(self):
         """
@@ -39,45 +33,41 @@ class CalcReward(py_trees.behaviour.Behaviour):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        self.node.get_logger().info("Calculating reward from current state...")
+        self.node.get_logger().info("Starting Step Delay Timer...")
 
     def update(self):
         """
-        Calculate the current reward given the current state of the robot.
+        Create a timer that acts as a delay fro each step,
+        Allows steps to not happen too fast so robot can have time to make decisions
+        that ahve impact
         
         Returns:
             py_trees.common.Status: SUCCESS if reward calculation is successful, FAILURE otherwise.
         """
-
-        self.reward = self.node.reward
         # If reward is not yet available, return RUNNING (waiting for data)
-        if self.reward is None:
-            self.node.get_logger().info("Waiting for reward data...")
+        if self.time_limit_reached == False:
+            # self.node.get_logger().info("Waiting to reach time limit...")
             return py_trees.common.Status.RUNNING
-
-        # Log and return the current reward
-        self.node.get_logger().info(f"Current Step Reward: {self.reward}")
-
-        self.node.add_reward_to_episode(self.reward) # Adds the current reward from this step to the cumulative epsisode reward
-        self.node.add_to_step_count() # make this its own behavior?
-
-        # Return SUCCESS if reward is available
-        return py_trees.common.Status.SUCCESS
+        elif self.time_limit_reached == True:
+            self.node.get_logger().info(f"Time limit reached.. continue...")
+            # Return SUCCESS if reward is available
+            return py_trees.common.Status.SUCCESS
 
     def terminate(self, new_status):
         """
         This is called when the behaviour switches to a non-running state (SUCCESS, FAILURE, INVALID).
         """
+        self.time_limit_reached = False
         # if new_status != py_trees.common.Status.RUNNING:
         #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
 
-    # def listener_callback(self, msg):
-    #     """
-    #     Callback to handle incoming messages and extract reward data.
+    def timer_callback(self):
+        """
+        Timer Callback
         
-    #     Args:
-    #         msg (StepData): The incoming message containing the reward.
-    #     """
-    #     # Extract reward from the message
-    #     self.reward = msg.reward
+        Args:
+            msg (StepData): The incoming message containing the reward.
+        """
+        # Extract reward from the message
+        self.time_limit_reached = True
         # self.node.get_logger().info(f"Received step reward: {self.reward}")
