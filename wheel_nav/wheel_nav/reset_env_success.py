@@ -43,6 +43,19 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             # reset_state.linear_velocity = 0.0
             # reset_state.angular_velocity = 0.0
             reset_state.success = False
+
+
+            
+            self.node.success = False
+            self.node.terminated = False
+            self.node.reward = 0.0
+
+            self.node.set_parameters([
+            rclpy.parameter.Parameter('success', rclpy.Parameter.Type.BOOL, False),
+            rclpy.parameter.Parameter('terminated', rclpy.Parameter.Type.BOOL, False),
+            rclpy.parameter.Parameter('reward', rclpy.Parameter.Type.DOUBLE, 0.0),
+        ])
+
             reset_state.terminated = False
             reset_state.reward = 0.0
             self.publisher.publish(reset_state)
@@ -52,6 +65,8 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             current_episode = self.node.get_current_episode()
             episode_reward = self.node.get_current_episode_reward()
             self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
+
+            self.node.reset_episode_reward()
 
             self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS

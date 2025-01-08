@@ -20,7 +20,7 @@
         </include>
     </group>
 
-    <node pkg="wheel_nav" exec="rl_step" name="rl_step" output="screen"></node>
+    <!-- <node pkg="wheel_nav" exec="rl_step" name="rl_step" output="screen"></node> -->
     <node pkg="wheel_nav" exec="step_publisher" name="step_publisher" output="screen"></node>
     <node pkg="wheel_nav" exec="goal_position_publisher" name="goal_position_publisher" output="screen"></node>
     

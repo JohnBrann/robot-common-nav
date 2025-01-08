@@ -16,6 +16,8 @@ class GetStateData(py_trees.behaviour.Behaviour):
         super().__init__(name)
         self.node = node
 
+        self.callback_called = False
+
         # initialize state data variables
         self.distance_to_goal = None
         self.angle_to_goal = None
@@ -57,9 +59,11 @@ class GetStateData(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if reward calculation is successful, FAILURE otherwise.
         """
 
-        if self.reward is None:
+        if self.callback_called == False:
             self.node.get_logger().info("Waiting for state data...")
             return py_trees.common.Status.RUNNING
+        
+
 
         self.node.distance_to_goal = self.distance_to_goal
         self.node.angle_to_goal = self.angle_to_goal
@@ -72,6 +76,12 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.node.reward = self.reward
 
         # self.node.get_logger().info(f"Distance to goal: {self.node.distance_to_goal}")
+        # self.node.get_logger().info(f"Angle to goal: {self.node.angle_to_goal}")
+        # self.node.get_logger().info(f"Scan Data: {self.node.scan_data}")
+        # self.node.get_logger().info(f"min_obstacle_distance: {self.node.min_obstacle_distance}")
+        # self.node.get_logger().info(f"angular_velocity: {self.node.angular_velocity}")
+        # self.node.get_logger().info(f"linear_velocity: {self.node.linear_velocity}")
+        # self.node.get_logger().info(f"terminated: {self.node.success}")
         # self.node.get_logger().info(f"Step Reward: {self.node.reward}")
 
         return py_trees.common.Status.SUCCESS
@@ -80,6 +90,8 @@ class GetStateData(py_trees.behaviour.Behaviour):
         """
         This is called when the behaviour switches to a non-running state (SUCCESS, FAILURE, INVALID).
         """
+
+        self.callback_called = False
         # self.reward = None
         # if new_status != py_trees.common.Status.RUNNING:
         #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
@@ -101,6 +113,10 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.terminated = msg.terminated
         self.success = msg.success
         self.reward = msg.reward
+
+        self.callback_called = True
+
+        self.node.get_logger().info("callback called...")
 
         # self.node.get_logger().info(f"Distance to goalllllllllll: {self.distance_to_goal}")
         # self.node.get_logger().info(f"Step Reward: {self.reward}")

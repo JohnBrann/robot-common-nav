@@ -9,9 +9,6 @@ import functools
 from py_trees.visitors import SnapshotVisitor
 from py_trees.display import unicode_tree
 
-
-
-
 from wheel_nav.experience_replay import ReplayMemory
 
 from wheel_nav.testing_state import TestingModeState
@@ -37,7 +34,6 @@ from wheel_nav.episode_running_state import EpisodeRunningState
 from wheel_nav.step_timer import StepTimer
 
 
-
 class RlBehaviorTree(Node):
     def __init__(self):
         super().__init__('rl_bt_node')
@@ -51,8 +47,8 @@ class RlBehaviorTree(Node):
         self.max_steps = 100
 
         # This is all state data, how are we going to hold this data across the system
-        # previously data was constantly published to a topic, however this cause in consistencies across the bt
-        # Can we make these variable so they are just published to a topic, or does it just make sense to hold them all here??? 
+        # previously data was constantly published to a topic, however this causes inconsistencies across the bt
+        # Can we make these variables so they are just published to a topic, or does it just make sense to hold them all here??? 
         # for now I am just putting them here. Data can be accessed across tre without an issue, but is it the best way tho???
         self.distance_to_goal = None
         self.angle_to_goal = None
@@ -60,12 +56,18 @@ class RlBehaviorTree(Node):
         self.min_obstacle_distance = None
         self.angular_velocity = None
         self.linear_velocity = None
-        self.terminated = False
-        self.success = False
-        self.reward = 0
-        
+        # self.terminated = False
+        # self.success = False
+        # self.reward = 0
 
-        # Replay Memory, is the initializeing process okay to be here?
+        self.declare_parameter('terminated', False)
+        self.declare_parameter('success', False)
+        self.declare_parameter('reward', 0.0)
+
+        # ros2 run wheel_nav rl_bt --ros-args --params-file `ros2 pkg prefix wheel_nav_msgs`/config/params.yaml
+
+        
+        # Replay Memory, is the initializing process okay to be here?
         self.replay_memory_size = 10000
         self.memory = ReplayMemory(self.replay_memory_size)
 
@@ -184,7 +186,7 @@ class RlBehaviorTree(Node):
                 # Tick the behavior tree
                 self.tree.tick()
 
-                # self.get_logger().info(f"Total Steps: {self.step_count}")
+                self.get_logger().info(f"Total Steps: {self.step_count}")
 
                 # Allow time for ROS2 to process messages
                 rclpy.spin_once(self, timeout_sec=0.1)
