@@ -1,8 +1,7 @@
 import rclpy
 import py_trees
 import py_trees_ros
-
-from wheel_nav_msgs.msg import StepData
+from wheel_nav_msgs.srv import GoalUpdate
 
 class ResetEnvSuccess(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
@@ -12,11 +11,10 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
         Args:
             name (str): Name of the behavior
             node (rclpy.node.Node): ROS 2 node to access parameters
-            is_training (bool): Indicates if the agent is in training mode
         """
         super().__init__(name)
         self.node = node
-        self.publisher = self.node.create_publisher(StepData, 'step_data', 10)
+        self.goal_update_client = self.node.create_client(GoalUpdate, 'goal_update')  # Service client
 
     def setup(self):
         """
@@ -32,41 +30,58 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Reset the environment, reward, and other state data.
+        Reset the environment, reward, and other state data, and update the goal via the service.
 
         Returns:
             py_trees.common.Status: SUCCESS if the reset is successful, FAILURE otherwise.
         """
         try:
-            # Publish reset state data
-            reset_state = StepData()
-            # reset_state.linear_velocity = 0.0
-            # reset_state.angular_velocity = 0.0
-            reset_state.success = False
-
-
-            
             self.node.success = False
             self.node.terminated = False
             self.node.reward = 0.0
 
-            self.node.set_parameters([
-            rclpy.parameter.Parameter('success', rclpy.Parameter.Type.BOOL, False),
-            rclpy.parameter.Parameter('terminated', rclpy.Parameter.Type.BOOL, False),
-            rclpy.parameter.Parameter('reward', rclpy.Parameter.Type.DOUBLE, 0.0),
-        ])
+            # Set parameters related to the episode state
+            # self.node.set_parameters([
+            #     rclpy.parameter.Parameter('success', rclpy.Parameter.Type.BOOL, False),
+            #     rclpy.parameter.Parameter('terminated', rclpy.Parameter.Type.BOOL, False),
+            #     rclpy.parameter.Parameter('reward', rclpy.Parameter.Type.DOUBLE, 0.0),
+            # ])
 
-            reset_state.terminated = False
-            reset_state.reward = 0.0
-            self.publisher.publish(reset_state)
-
+            # Reset step count and episode count
             self.node.reset_step_count()
             self.node.add_to_episode_count()
             current_episode = self.node.get_current_episode()
             episode_reward = self.node.get_current_episode_reward()
             self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
 
+            # Reset episode reward
             self.node.reset_episode_reward()
+
+            # Make the service call to update the goal
+            if not self.goal_update_client.wait_for_service(timeout_sec=1.0):
+                self.node.get_logger().error('Goal Update service not available')
+                return py_trees.common.Status.FAILURE
+
+            # Create request object
+            request = GoalUpdate.Request()
+            request.x = 1.0  # Example coordinates, replace with actual logic
+            request.y = 0.0  # Example coordinates, replace with actual logic
+
+            # Call the service
+            future = self.goal_update_client.call_async(request)
+
+            # Wait for the service response
+            rclpy.spin_until_future_complete(self.node, future)
+            if future.result() is not None:
+                success = future.result().success
+                if success:
+                    self.node.get_logger().info("Goal updated successfully")
+                else:
+                    self.node.get_logger().error("Goal update failed")
+                    return py_trees.common.Status.FAILURE
+            else:
+                self.node.get_logger().error("Service call failed")
+                return py_trees.common.Status.FAILURE
 
             self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS

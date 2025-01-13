@@ -32,7 +32,7 @@ setup(
             "blackboard_test = wheel_nav.blackboard_test:main",
             'step_publisher = wheel_nav.step_publisher:main',
             'rl_bt = wheel_nav.rl_bt:main',
-            'goal_position_publisher = wheel_nav.goal_position_publisher:main',
+            'goal_update_service = wheel_nav.goal_update_service:main',
         ],
     },
 )

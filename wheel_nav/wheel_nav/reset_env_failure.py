@@ -3,6 +3,7 @@ import py_trees
 import py_trees_ros
 
 from wheel_nav_msgs.msg import StepData
+from std_srvs.srv import Empty  
 
 class ResetEnvFailure(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
@@ -12,17 +13,20 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         Args:
             name (str): Name of the behavior
             node (rclpy.node.Node): ROS 2 node to access parameters
-            is_training (bool): Indicates if the agent is in training mode
         """
         super().__init__(name)
         self.node = node
         self.publisher = self.node.create_publisher(StepData, 'step_data', 10)
+        self.reset_world_client = self.node.create_client(Empty, '/reset_world')
 
     def setup(self):
         """
         Setup any delayed initialization needed for the behavior.
         """
-        # self.node.get_logger().info("Setting up ResetEnvState behavior...")
+        # Wait for the reset_world service to be available
+        self.reset_world_client.wait_for_service(timeout_sec=10.0)
+        if not self.reset_world_client.service_is_ready():
+            self.node.get_logger().error("Failed to connect to /reset_world service")
 
     def initialise(self):
         """
@@ -32,7 +36,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Reset the environment, reward, and other state data, respawn robot
+        Reset the environment, reward, and other state data, and respawn the robot.
 
         Returns:
             py_trees.common.Status: SUCCESS if the reset is successful, FAILURE otherwise.
@@ -40,15 +44,21 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         try:
             # Publish reset state data
             reset_state = StepData()
-            # reset_state.linear_velocity = 0.0
-            # reset_state.angular_velocity = 0.0
             reset_state.success = False
             reset_state.terminated = False
             reset_state.reward = 0.0
-
-            # todo: respawn robot!!!!
             self.publisher.publish(reset_state)
 
+            # Call the reset_world service
+            request = Empty.Request()
+            future = self.reset_world_client.call_async(request)
+            rclpy.spin_until_future_complete(self.node, future)
+
+            if future.result() is None:
+                self.node.get_logger().error("Failed to reset the world: Service call unsuccessful")
+                return py_trees.common.Status.FAILURE
+
+            # Update the node's state
             self.node.reset_step_count()
             self.node.add_to_episode_count()
             current_episode = self.node.get_current_episode()
