@@ -60,6 +60,12 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
         # if self.node.episode_truncated():
         #     self.episode_failure = True
         self.episode_failure = self.node.terminated
+        self.node.allow_optimization = True
+
+        if self.node.episode_truncated():
+            self.episode_failure = True
+            self.node.add_reward_to_episode(-1500)
+        
         if self.episode_failure:
             self.node.get_logger().info(f"Episode was a failure")
             return py_trees.common.Status.SUCCESS

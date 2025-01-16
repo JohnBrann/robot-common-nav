@@ -2,10 +2,8 @@ import rclpy
 import py_trees
 import py_trees_ros
 
-from wheel_nav_msgs.msg import StepData
 
-
-class EpisodeSuccessState(py_trees.behaviour.Behaviour):
+class AllowOptimizationState(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
         """
         Initialize the condition node with a reference to the ROS 2 node
@@ -16,19 +14,6 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-
-        # Initialize the reward variable
-        self.episode_success = None
-
-        # Subscribe to the StepData topic
-        # self.subscription = self.node.create_subscription(
-        #     StepData,
-        #     'step_data',
-        #     self.listener_callback,
-        #     10
-        # )
-        # self.subscription  # prevent unused variable warning # do we need? 
-        
 
     def setup(self):
 
@@ -51,34 +36,28 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Check the episode was a success
-        
+        We only want to optimze the model at the end of an episode
+        Flag created for this 
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-        self.episode_success = self.node.success
-        self.node.allow_optimization = True
-        if self.episode_success:
-            self.node.get_logger().info(f"Episode was a Success")
-            return py_trees.common.Status.SUCCESS
-        else:
-            # self.node.get_logger().info(f"Agent is Testing")
+
+
+        if self.node.step_count % 10 == 0:
+            self.node.get_logger().info(f"\n\n\nOPTMIZEZEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n\n\n")
             return py_trees.common.Status.FAILURE
+
+        if self.node.allow_optimization:
+            # self.node.get_logger().info(f"OPTMIZEZEEEEEEEEEEEEEEE")
+            return py_trees.common.Status.FAILURE
+        else:
+            return py_trees.common.Status.SUCCESS
         
     def terminate(self, new_status):
         """
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
+        self.node.allow_optimization = False
         # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
-    # def listener_callback(self, msg):
-    #     """
-    #     Callback to handle incoming messages and extract episode data.
-        
-    #     Args:
-    #         msg (StepData): The incoming message containing the reward.
-    #     """
-    #     # Extract reward from the message
-    #     self.episode_success = msg.success
-    #     # self.node.get_logger().info(f"Received reward: {self.reward}")

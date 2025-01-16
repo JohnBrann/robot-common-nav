@@ -3,7 +3,11 @@ import py_trees
 import py_trees_ros
 
 from wheel_nav_msgs.msg import StepData
+from wheel_nav_msgs.srv import GoalUpdate
 from std_srvs.srv import Empty  
+
+
+import torch
 
 class ResetEnvFailure(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
@@ -16,8 +20,9 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-        self.publisher = self.node.create_publisher(StepData, 'step_data', 10)
+        # self.publisher = self.node.create_publisher(StepData, 'step_data', 10)
         self.reset_world_client = self.node.create_client(Empty, '/reset_world')
+        self.goal_update_client = self.node.create_client(GoalUpdate, 'goal_update')  # Service client
 
     def setup(self):
         """
@@ -42,12 +47,9 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if the reset is successful, FAILURE otherwise.
         """
         try:
-            # Publish reset state data
-            reset_state = StepData()
-            reset_state.success = False
-            reset_state.terminated = False
-            reset_state.reward = 0.0
-            self.publisher.publish(reset_state)
+            self.node.success = False
+            self.node.terminated = False
+            self.node.reward = 0.0
 
             # Call the reset_world service
             request = Empty.Request()
@@ -64,7 +66,38 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
             current_episode = self.node.get_current_episode()
             episode_reward = self.node.get_current_episode_reward()
             self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
+
+            self.node.episode_rewards.append(episode_reward)
+
+            if current_episode > self.node.best_episode_reward:
+                torch.save(self.node.policy_dqn.state_dict(), self.node.MODEL_FILE)
+                self.node.best_episode_reward = episode_reward
+
+
+            # Reset episode reward
+            self.node.reset_episode_reward()
             
+            # Create request object
+            request = GoalUpdate.Request()
+            # request.x = 1.0  # Example coordinates, replace with actual logic
+            # request.y = 0.0  # Example coordinates, replace with actual logic
+
+            # Call the service
+            future = self.goal_update_client.call_async(request)
+
+            # Wait for the service response
+            rclpy.spin_until_future_complete(self.node, future)
+            if future.result() is not None:
+                success = future.result().success
+                if success:
+                    self.node.get_logger().info("Goal updated successfully")
+                else:
+                    self.node.get_logger().error("Goal update failed")
+                    return py_trees.common.Status.FAILURE
+            else:
+                self.node.get_logger().error("Service call failed")
+                return py_trees.common.Status.FAILURE
+
             self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS
 

@@ -56,14 +56,11 @@ class AppendMemory(py_trees.behaviour.Behaviour):
         """
 
         self.node.memory.append((
-            self.node.distance_to_goal,
-            self.node.angle_to_goal,
-            self.node.scan_data,
-            self.node.min_obstacle_distance,
-            self.node.angular_velocity,
-            self.node.linear_velocity,
+            self.node.state,
+            self.node.action,
+            self.node.new_state,
+            self.node.reward,
             self.node.terminated,
-            self.node.reward
         ))
 
         # sample = self.node.memory.sample(1) 

@@ -7,7 +7,7 @@ import math
 
 from wheel_nav_msgs.msg import StepData
 
-class GetStateData(py_trees.behaviour.Behaviour):
+class SetInitialTrainingState(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
         """
         Initialize the condition node with a reference to the ROS 2 node
@@ -28,14 +28,16 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.min_obstacle_distance = None 
         self.angular_velocity = None
         self.linear_velocity = None
-        self.terminated = None
-        self.success = None
-        self.reward = None
+        # self.terminated = None
+        # self.success = None
+        # self.reward = None
+
 
         # Normalization constants
         self.MAX_GOAL_DISTANCE = 5.0  # Example max distance to goal in meters
         self.MAX_SCAN_DISTANCE = 3.5  # Example max range of LiDAR in meters
         self.MAX_VELOCITY = 1.0        # Example max velocity in m/s
+
 
 
         # Subscribe to the StepData topic
@@ -58,21 +60,21 @@ class GetStateData(py_trees.behaviour.Behaviour):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
+
+        self.node.training_started = True
         # self.node.get_logger().info("Calculating reward from current state...")
 
     def update(self):
         """
-        Set node specific variable to state data 
+        Set node-specific variable to state data and convert it to a PyTorch tensor.
         
         Returns:
-            py_trees.common.Status: SUCCESS if reward calculation is successful, FAILURE otherwise.
+            py_trees.common.Status: SUCCESS if state consolidation and conversion is successful, FAILURE otherwise.
         """
-
-        if self.callback_called == False:
+        if not self.callback_called:
             self.node.get_logger().info("Waiting for state data...")
             return py_trees.common.Status.RUNNING
         
-
 
         self.node.distance_to_goal = self.normalize_distance(self.distance_to_goal)
         self.node.angle_to_goal = self.normalize_angle(self.angle_to_goal)
@@ -80,9 +82,9 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.node.min_obstacle_distance = self.normalize_distance(self.min_obstacle_distance)
         self.node.angular_velocity = self.normalize_velocity(self.angular_velocity)
         self.node.linear_velocity = self.normalize_velocity(self.linear_velocity)
-        self.node.terminated = self.terminated
-        self.node.success = self.success
-        self.node.reward = self.reward
+        self.node.terminated = False
+        self.node.success = False
+        self.node.reward = 0.0
 
         # Log normalized data
         # self.node.get_logger().info(f"Normalized distance to goal: {self.node.distance_to_goal}")
@@ -114,30 +116,15 @@ class GetStateData(py_trees.behaviour.Behaviour):
         state_tensor = state_tensor.unsqueeze(dim=0)
 
         # Move tensor to the appropriate device (e.g., GPU if available)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        state_tensor = state_tensor.to(device)
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_tensor = state_tensor.to(self.node.device)
 
         # Store tensor for later use
-        self.node.new_state = state_tensor
+        self.node.state = state_tensor
 
-        # self.node.distance_to_goal = self.distance_to_goal
-        # self.node.angle_to_goal = self.angle_to_goal
-        # self.node.scan_data = self.scan_data
-        # self.node.min_obstacle_distance = self.min_obstacle_distance
-        # self.node.angular_velocity = self.angular_velocity
-        # self.node.linear_velocity = self.linear_velocity
-        # self.node.terminated = self.terminated
-        # self.node.success = self.success
-        # self.node.reward = self.reward
 
-        # self.node.get_logger().info(f"Distance to goal: {self.node.distance_to_goal}")
-        # self.node.get_logger().info(f"Angle to goal: {self.node.angle_to_goal}")
-        # self.node.get_logger().info(f"Scan Data: {self.node.scan_data}")
-        # self.node.get_logger().info(f"min_obstacle_distance: {self.node.min_obstacle_distance}")
-        # self.node.get_logger().info(f"angular_velocity: {self.node.angular_velocity}")
-        # self.node.get_logger().info(f"linear_velocity: {self.node.linear_velocity}")
-        # self.node.get_logger().info(f"terminated: {self.node.success}")
-        # self.node.get_logger().info(f"Step Reward: {self.node.reward}")
+        # Log the tensor for debugging
+        # self.node.get_logger().info(f"State tensor: {state_tensor}")
 
         return py_trees.common.Status.SUCCESS
 
@@ -171,10 +158,7 @@ class GetStateData(py_trees.behaviour.Behaviour):
 
         self.callback_called = True
 
-        # self.node.get_logger().info("callback called...")
-
-        # self.node.get_logger().info(f"Distance to goalllllllllll: {self.distance_to_goal}")
-        # self.node.get_logger().info(f"Step Reward: {self.reward}")
+        self.node.get_logger().info("callback called...")
 
     def normalize_distance(self, distance):
         """Normalize distance to the range [0, 1]."""

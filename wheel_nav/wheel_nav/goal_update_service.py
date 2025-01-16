@@ -36,7 +36,7 @@ class GoalService(Node):
         
         # Respond to the service call
         response.success = True
-        self.get_logger().info("Goal position updated successfully.")
+        self.get_logger().info(f"Goal position updated successfully.  \n\n                                       [{goal_msg.x}, {goal_msg.y}]\n\n")
         return response
 
 def main(args=None):

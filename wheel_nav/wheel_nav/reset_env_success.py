@@ -3,6 +3,8 @@ import py_trees
 import py_trees_ros
 from wheel_nav_msgs.srv import GoalUpdate
 
+import torch 
+
 class ResetEnvSuccess(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
         """
@@ -52,10 +54,20 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             self.node.add_to_episode_count()
             current_episode = self.node.get_current_episode()
             episode_reward = self.node.get_current_episode_reward()
+
+
+            if current_episode > self.node.best_episode_reward:
+                torch.save(self.node.policy_dqn.state_dict(), self.node.MODEL_FILE)
+                self.node.best_episode_reward = episode_reward
+                
             self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
+
+            self.node.episode_rewards.append(episode_reward)
 
             # Reset episode reward
             self.node.reset_episode_reward()
+            
+            
 
             # Make the service call to update the goal
             if not self.goal_update_client.wait_for_service(timeout_sec=1.0):
@@ -64,8 +76,8 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
 
             # Create request object
             request = GoalUpdate.Request()
-            request.x = 1.0  # Example coordinates, replace with actual logic
-            request.y = 0.0  # Example coordinates, replace with actual logic
+            # request.x = 1.0  # Example coordinates, replace with actual logic
+            # request.y = 0.0  # Example coordinates, replace with actual logic
 
             # Call the service
             future = self.goal_update_client.call_async(request)

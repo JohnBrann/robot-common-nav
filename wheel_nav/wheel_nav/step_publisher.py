@@ -19,15 +19,17 @@ class StepPublisher(Node):
         self.odom_initialized = False
         self.scan_initialized = False
 
-        self.current_goal_pos = np.array([0.0, 0.0])  #  whenever there is a success or failure, a new one should be generated
-        self.current_pos = np.array([-1, 0])
-        self.current_yaw = 0
+        # Initialize state variables
+        self.current_goal_pos = np.array([0.0, 0.0])  
+        self.current_pos = np.array([-1.0, 0.0])
+        self.current_yaw = 0.0
 
-        self.linear_x = 0
-        self.angular_z = 0
-
+        self.init_goal_distance = None  # Initial distance to the goal
+        self.episode_active = False  # Indicates if an episode is active
+        self.linear_x = 0.0
+        self.angular_z = 0.0
         self.scan_data = []
-        self.min_obstacle_distance = 100
+        self.min_obstacle_distance = 100.0
 
         self.success = False
         self.terminated = False
@@ -35,14 +37,13 @@ class StepPublisher(Node):
         # Subscribers
         self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.scan_subscriber = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
-
         self.goal_subscriber = self.create_subscription(GoalPosition, 'goal_position', self.goal_callback, 10)
 
         # Publisher
         self.publisher = self.create_publisher(StepData, 'step_data', 10)
 
         # Timer for publishing data
-        self.timer = self.create_timer(0.1, self.publish_data)  # Publish every 0.2 seconds, this just depends how fast we want the data to be published, my guess is 0.2 seconds is completely reasonable
+        self.timer = self.create_timer(0.1, self.publish_data)
 
     def publish_data(self):
         if not self.odom_initialized or not self.scan_initialized:
@@ -52,13 +53,20 @@ class StepPublisher(Node):
         distance_to_goal = self.calc_distance_to_goal()
         angle_to_goal = self.calc_angle_to_goal(self.current_yaw)
 
+        # If the episode is inactive, reset for a new episode
+        if not self.episode_active:
+            self.init_goal_distance = distance_to_goal
+            self.episode_active = True
+            self.get_logger().info(f'New episode started. Initial goal distance: {self.init_goal_distance:.2f}')
+
         # Calculate reward
         reward = rw.calc_reward(
-            distance_to_goal, 2.82, angle_to_goal, self.min_obstacle_distance,
-            self.success, self.terminated, self.linear_x, self.angular_z
+            distance_to_goal, self.init_goal_distance, angle_to_goal,
+            self.min_obstacle_distance, self.success, self.terminated,
+            self.linear_x, self.angular_z
         )
 
-        # Prepare the StepData message
+        # Prepare and publish the StepData message
         msg = StepData()
         msg.distance_to_goal = distance_to_goal
         msg.angle_to_goal = angle_to_goal
@@ -66,13 +74,16 @@ class StepPublisher(Node):
         msg.min_obstacle_distance = self.min_obstacle_distance
         msg.linear_velocity = self.linear_x
         msg.angular_velocity = self.angular_z
-        msg.success = self.success
+        msg.success = bool(self.success)
         msg.terminated = self.terminated
         msg.reward = reward
 
-        # Publish the message
         self.publisher.publish(msg)
         self.get_logger().info(f'Published: {msg}')
+
+        # If success or termination is detected, mark the episode as inactive
+        if self.success or self.terminated:
+            self.episode_active = False
 
     def odom_callback(self, msg):
         position = msg.pose.pose.position
@@ -91,28 +102,29 @@ class StepPublisher(Node):
 
     def lidar_callback(self, msg):
         total_ranges = len(msg.ranges)
-        num_of_laser = 12
+        num_of_laser = 4
         step = total_ranges // num_of_laser
         selected_ranges = [msg.ranges[i] for i in range(0, total_ranges, step)][:num_of_laser]
-        # Calculates the minimum distance to a an obstacle from lidar data
+        
+        # Calculate the minimum distance to obstacles
         self.min_obstacle_distance = min(selected_ranges, default=10)
-        # If robot is too close to an obstacle, result in termination
-        if self.min_obstacle_distance < 0.2:
-            self.terminated = True
-        else:
-            self.terminated = False
+        
+        # Terminate if too close to an obstacle
+        self.terminated = self.min_obstacle_distance < 0.2
         self.scan_data = selected_ranges
         self.scan_initialized = True
 
     def goal_callback(self, msg):
-        self.current_goal_pos = np.array([msg.x, msg.y]) 
+        # Update the goal position but only reset the episode if it's inactive
+        if not self.episode_active:
+            self.current_goal_pos = np.array([msg.x, msg.y])
+            self.get_logger().info(f'Goal updated to: {self.current_goal_pos}')
+        else:
+            self.get_logger().info(f'Ignored goal update during active episode')
 
     def calc_distance_to_goal(self):
         distance = np.sqrt(np.sum((self.current_pos - self.current_goal_pos) ** 2))
-        if distance < 0.1:
-            self.success = True
-        else:
-            self.success = False
+        self.success = distance < 0.1
         return distance
 
     def calc_angle_to_goal(self, yaw):
@@ -121,6 +133,7 @@ class StepPublisher(Node):
         angle_to_goal = math.atan2(goal_y - current_y, goal_x - current_x)
         angle_diff = math.atan2(math.sin(angle_to_goal - yaw), math.cos(angle_to_goal - yaw))
         return abs(angle_diff)
+
 
 
 def main(args=None):

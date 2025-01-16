@@ -2,10 +2,8 @@ import rclpy
 import py_trees
 import py_trees_ros
 
-from wheel_nav_msgs.msg import StepData
 
-
-class EpisodeSuccessState(py_trees.behaviour.Behaviour):
+class MemoryLengthState(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
         """
         Initialize the condition node with a reference to the ROS 2 node
@@ -16,19 +14,6 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-
-        # Initialize the reward variable
-        self.episode_success = None
-
-        # Subscribe to the StepData topic
-        # self.subscription = self.node.create_subscription(
-        #     StepData,
-        #     'step_data',
-        #     self.listener_callback,
-        #     10
-        # )
-        # self.subscription  # prevent unused variable warning # do we need? 
-        
 
     def setup(self):
 
@@ -51,18 +36,17 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Check the episode was a success
+        Chekcs the lengths of the memory to the size of the mini batch
+        Returns success if not enough data so we skip over the optimization behavior
         
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-        self.episode_success = self.node.success
-        self.node.allow_optimization = True
-        if self.episode_success:
-            self.node.get_logger().info(f"Episode was a Success")
+
+        if len(self.node.memory) < self.node.mini_batch_size:
+            self.node.get_logger().info(f"Not enough data in memory")
             return py_trees.common.Status.SUCCESS
         else:
-            # self.node.get_logger().info(f"Agent is Testing")
             return py_trees.common.Status.FAILURE
         
     def terminate(self, new_status):
@@ -72,13 +56,3 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         """
         # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
-    # def listener_callback(self, msg):
-    #     """
-    #     Callback to handle incoming messages and extract episode data.
-        
-    #     Args:
-    #         msg (StepData): The incoming message containing the reward.
-    #     """
-    #     # Extract reward from the message
-    #     self.episode_success = msg.success
-    #     # self.node.get_logger().info(f"Received reward: {self.reward}")
