@@ -72,7 +72,7 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if state consolidation and conversion is successful, FAILURE otherwise.
         """
         if not self.callback_called:
-            self.node.get_logger().info("Waiting for state data...")
+            self.node.get_logger().info("Waiting for Init State Data...")
             return py_trees.common.Status.RUNNING
         
 
@@ -158,7 +158,7 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
 
         self.callback_called = True
 
-        self.node.get_logger().info("callback called...")
+        # self.node.get_logger().info("callback called...")
 
     def normalize_distance(self, distance):
         """Normalize distance to the range [0, 1]."""

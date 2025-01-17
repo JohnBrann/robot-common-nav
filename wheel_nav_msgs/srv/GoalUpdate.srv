@@ -5,3 +5,5 @@ float32 y  # Y-coordinate of the new goal
 ---
 # Response part
 bool success  # Whether the goal update was successful
+float32 x  # X-coordinate of the new goal
+float32 y  # Y-coordinate of the new goal

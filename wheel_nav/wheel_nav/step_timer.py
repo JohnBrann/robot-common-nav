@@ -33,7 +33,7 @@ class StepTimer(py_trees.behaviour.Behaviour):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        self.node.get_logger().info("Starting Step Delay Timer...")
+        # self.node.get_logger().info("Starting Step Delay Timer...")
 
     def update(self):
         """
@@ -49,7 +49,7 @@ class StepTimer(py_trees.behaviour.Behaviour):
             # self.node.get_logger().info("Waiting to reach time limit...")
             return py_trees.common.Status.RUNNING
         elif self.time_limit_reached == True:
-            self.node.get_logger().info(f"Time limit reached.. continue...")
+            # self.node.get_logger().info(f"Time limit reached.. continue...")
             # Return SUCCESS if reward is available
             return py_trees.common.Status.SUCCESS
 

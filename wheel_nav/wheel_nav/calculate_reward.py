@@ -39,7 +39,7 @@ class CalcReward(py_trees.behaviour.Behaviour):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        self.node.get_logger().info("Calculating reward from current state...")
+        # self.node.get_logger().info("Calculating reward from current state...")
 
     def update(self):
         """
@@ -54,11 +54,13 @@ class CalcReward(py_trees.behaviour.Behaviour):
         self.reward = self.node.reward
         # If reward is not yet available, return RUNNING (waiting for data)
         if self.reward is None:
-            self.node.get_logger().info("Waiting for reward data...")
+            # self.node.get_logger().info("Waiting for reward data...")
             return py_trees.common.Status.RUNNING
         
         # self.node.episode_rewards.append(self.reward)
-
+        
+        self.reward = round(self.reward, 2) 
+        
         # Log and return the current reward
         self.node.get_logger().info(f"Current Step Reward: {self.reward}")
 

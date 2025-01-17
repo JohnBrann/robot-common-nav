@@ -10,3 +10,4 @@ float32 angular_velocity
 bool success 
 bool terminated
 float32 reward
+float32 init_goal_distance

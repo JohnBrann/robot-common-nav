@@ -87,7 +87,7 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             if future.result() is not None:
                 success = future.result().success
                 if success:
-                    self.node.get_logger().info("Goal updated successfully")
+                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({future.result().x} ,{future.result().y} )")
                 else:
                     self.node.get_logger().error("Goal update failed")
                     return py_trees.common.Status.FAILURE

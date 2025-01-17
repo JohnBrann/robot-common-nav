@@ -28,15 +28,18 @@ class GoalService(Node):
         # goal_msg.y = request.y
         # Randomly generate a Goal, in future we may want to make this semi-randomly generated (random from a list of valid goals)
         # For an open world this is fine
-        goal_msg.x = random.uniform(self.goal_range[0], self.goal_range[1])
-        goal_msg.y = random.uniform(self.goal_range[0], self.goal_range[1])
+        goal_msg.x = round(random.uniform(self.goal_range[0], self.goal_range[1]), 2)
+        goal_msg.y = round(random.uniform(self.goal_range[0], self.goal_range[1]), 2)
         
+
         # Publish the new goal position
         self.goal_pub.publish(goal_msg)
         
         # Respond to the service call
         response.success = True
-        self.get_logger().info(f"Goal position updated successfully.  \n\n                                       [{goal_msg.x}, {goal_msg.y}]\n\n")
+        response.x = goal_msg.x
+        response.y = goal_msg.y
+        self.get_logger().info(f"Goal position updated successfully.[{goal_msg.x}, {goal_msg.y}]")
         return response
 
 def main(args=None):

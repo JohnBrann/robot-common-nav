@@ -44,7 +44,7 @@ class MemoryLengthState(py_trees.behaviour.Behaviour):
         """
 
         if len(self.node.memory) < self.node.mini_batch_size:
-            self.node.get_logger().info(f"Not enough data in memory")
+            # self.node.get_logger().info(f"Not enough data in memory")
             return py_trees.common.Status.SUCCESS
         else:
             return py_trees.common.Status.FAILURE

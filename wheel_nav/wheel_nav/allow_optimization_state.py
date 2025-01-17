@@ -43,12 +43,10 @@ class AllowOptimizationState(py_trees.behaviour.Behaviour):
         """
 
 
-        if self.node.step_count % 10 == 0:
-            self.node.get_logger().info(f"\n\n\nOPTMIZEZEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n\n\n")
+        if self.node.step_count % 150 == 0:
             return py_trees.common.Status.FAILURE
 
         if self.node.allow_optimization:
-            # self.node.get_logger().info(f"OPTMIZEZEEEEEEEEEEEEEEE")
             return py_trees.common.Status.FAILURE
         else:
             return py_trees.common.Status.SUCCESS

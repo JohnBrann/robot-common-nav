@@ -45,7 +45,7 @@ class DiscreteActionState(py_trees.behaviour.Behaviour):
         """
 
         if self.is_discrete:
-            self.node.get_logger().info(f"Action Space is Discrete")
+            # self.node.get_logger().info(f"Action Space is Discrete")
             return py_trees.common.Status.SUCCESS
         else:
             # self.node.get_logger().info(f"Agent is Testing")

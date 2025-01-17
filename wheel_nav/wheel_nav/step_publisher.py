@@ -24,8 +24,8 @@ class StepPublisher(Node):
         self.current_pos = np.array([-1.0, 0.0])
         self.current_yaw = 0.0
 
-        self.init_goal_distance = None  # Initial distance to the goal
-        self.episode_active = False  # Indicates if an episode is active
+        self.init_goal_distance = 1.0  # Initial distance to the goal
+        self.episode_active = True  # Indicates if an episode is active
         self.linear_x = 0.0
         self.angular_z = 0.0
         self.scan_data = []
@@ -66,6 +66,7 @@ class StepPublisher(Node):
             self.linear_x, self.angular_z
         )
 
+
         # Prepare and publish the StepData message
         msg = StepData()
         msg.distance_to_goal = distance_to_goal
@@ -77,6 +78,7 @@ class StepPublisher(Node):
         msg.success = bool(self.success)
         msg.terminated = self.terminated
         msg.reward = reward
+        msg.init_goal_distance = self.init_goal_distance # temp data
 
         self.publisher.publish(msg)
         self.get_logger().info(f'Published: {msg}')
@@ -102,7 +104,7 @@ class StepPublisher(Node):
 
     def lidar_callback(self, msg):
         total_ranges = len(msg.ranges)
-        num_of_laser = 4
+        num_of_laser = 6
         step = total_ranges // num_of_laser
         selected_ranges = [msg.ranges[i] for i in range(0, total_ranges, step)][:num_of_laser]
         
@@ -124,7 +126,7 @@ class StepPublisher(Node):
 
     def calc_distance_to_goal(self):
         distance = np.sqrt(np.sum((self.current_pos - self.current_goal_pos) ** 2))
-        self.success = distance < 0.1
+        self.success = distance < 0.2
         return distance
 
     def calc_angle_to_goal(self, yaw):

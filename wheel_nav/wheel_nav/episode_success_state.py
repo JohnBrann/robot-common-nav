@@ -59,7 +59,7 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         self.episode_success = self.node.success
         self.node.allow_optimization = True
         if self.episode_success:
-            self.node.get_logger().info(f"Episode was a Success")
+            self.node.get_logger().info(f"Episode was a SUCCESS")
             return py_trees.common.Status.SUCCESS
         else:
             # self.node.get_logger().info(f"Agent is Testing")

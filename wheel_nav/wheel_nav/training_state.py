@@ -34,6 +34,7 @@ class TrainingModeState(py_trees.behaviour.Behaviour):
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
         # self.node.get_logger().info(f"Determining Training Mode... is_training?")
+
         
 
     def update(self):
@@ -45,7 +46,7 @@ class TrainingModeState(py_trees.behaviour.Behaviour):
         """
 
         if self.is_training:
-            self.node.get_logger().info(f"Agent is Training")
+            # self.node.get_logger().info(f"Agent is Training")
             return py_trees.common.Status.SUCCESS
         else:
             return py_trees.common.Status.FAILURE

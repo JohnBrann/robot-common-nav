@@ -37,7 +37,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         """
         Called the first time the behavior is ticked or anytime the status is not RUNNING thereafter.
         """
-        self.node.get_logger().info("Resetting environment state after failure...")
+        # self.node.get_logger().info("Resetting environment state after failure...")
 
     def update(self):
         """
@@ -90,7 +90,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
             if future.result() is not None:
                 success = future.result().success
                 if success:
-                    self.node.get_logger().info("Goal updated successfully")
+                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({future.result().x} ,{future.result().y} )")
                 else:
                     self.node.get_logger().error("Goal update failed")
                     return py_trees.common.Status.FAILURE
@@ -98,7 +98,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
                 self.node.get_logger().error("Service call failed")
                 return py_trees.common.Status.FAILURE
 
-            self.node.get_logger().info("Environment reset successfully")
+            # self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS
 
         except Exception as e:
@@ -109,4 +109,4 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         """
         Clean up when the behavior switches to a non-running state.
         """
-        self.node.get_logger().info(f"Episode ended from Failure...")
+        # self.node.get_logger().info(f"Episode ended from Failure...")

@@ -64,10 +64,10 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
 
         if self.node.episode_truncated():
             self.episode_failure = True
-            self.node.add_reward_to_episode(-1500)
+            self.node.add_reward_to_episode(-100)
         
         if self.episode_failure:
-            self.node.get_logger().info(f"Episode was a failure")
+            self.node.get_logger().info(f"Episode was a FAILURE")
             return py_trees.common.Status.SUCCESS
         else:
             # self.node.get_logger().info(f"Agent is Testing")

@@ -56,7 +56,7 @@ class EpisodeRunningState(py_trees.behaviour.Behaviour):
         self.node.allow_optimization = False
 
         if self.episode_running == True:
-            self.node.get_logger().info(f"Episode Running")
+            # self.node.get_logger().info(f"Episode Running")
             return py_trees.common.Status.SUCCESS
         else:
             return py_trees.common.Status.FAILURE

@@ -69,7 +69,7 @@ class GetStateData(py_trees.behaviour.Behaviour):
         """
 
         if self.callback_called == False:
-            self.node.get_logger().info("Waiting for state data...")
+            # self.node.get_logger().info("Waiting for state data...")
             return py_trees.common.Status.RUNNING
         
 
