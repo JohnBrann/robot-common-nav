@@ -15,12 +15,14 @@ def calc_reward(distance_to_goal, initial_distance_to_goal, angle_to_goal, min_o
     reward -= abs(angle_to_goal) * 2  # Penalize larger angular deviation
 
     # Penalty for proximity to obstacles
-    if min_obstacle_distance < 0.2:
+    if min_obstacle_distance < 0.25:
         reward -= 20  # Harsh penalty for being too close to obstacles
 
     # Rewards or penalties based on velocities
     reward -= abs(angular_velocity) * 2  # Penalize excessive angular velocity
     # reward += linear_velocity * 10  # Reward forward motion (assuming positive linear velocity)
+    if linear_velocity < 0.15:
+        reward -= 1
 
     # Reward for success
     if reached_waypoint:

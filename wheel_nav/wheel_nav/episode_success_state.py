@@ -20,16 +20,6 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         # Initialize the reward variable
         self.episode_success = None
 
-        # Subscribe to the StepData topic
-        # self.subscription = self.node.create_subscription(
-        #     StepData,
-        #     'step_data',
-        #     self.listener_callback,
-        #     10
-        # )
-        # self.subscription  # prevent unused variable warning # do we need? 
-        
-
     def setup(self):
 
         """
@@ -39,26 +29,21 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
         
-
     def update(self):
         """
-        Check the episode was a success
+        Check if the episode was a success
         
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
         self.episode_success = self.node.success
-        self.node.allow_optimization = True
         if self.episode_success:
+            self.node.allow_optimization = True
             self.node.get_logger().info(f"Episode was a SUCCESS")
             return py_trees.common.Status.SUCCESS
         else:
@@ -70,15 +55,3 @@ class EpisodeSuccessState(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
-
-    # def listener_callback(self, msg):
-    #     """
-    #     Callback to handle incoming messages and extract episode data.
-        
-    #     Args:
-    #         msg (StepData): The incoming message containing the reward.
-    #     """
-    #     # Extract reward from the message
-    #     self.episode_success = msg.success
-    #     # self.node.get_logger().info(f"Received reward: {self.reward}")

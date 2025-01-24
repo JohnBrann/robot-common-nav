@@ -20,27 +20,21 @@ class PlotGraph(py_trees.behaviour.Behaviour):
         
 
     def setup(self):
-
         """
           What to do here?
           Delayed one-time initialisation that would otherwise interfere
             with offline rendering of this behaviour in a tree to dot graph
             or validation of the behaviour's configuration.
         """
-
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
         
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
-        
 
     def update(self):
         """
-        Check the 'is_training' parameter
+        Save/plot rewards graph
         
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
@@ -54,27 +48,47 @@ class PlotGraph(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
     def plot_episode_rewards(self):
         """
-        Plots the reward per episode.
+        Plots the reward per episode and epsilon decay with two y-axes.
         """
         if len(self.node.episode_rewards) == 0:
             self.get_logger().warn("No episode rewards recorded.")
             return
         
-        GRAPH_FILE = os.path.join("src", f'rewards_graph.png')
+        if len(self.node.epsilon_list) == 0:
+            self.get_logger().warn("No epsilon values recorded.")
+            return
+        
+        GRAPH_FILE = os.path.join("src", 'rewards_graph_with_epsilon.png')
 
+        # Generate the x-axis for episodes
         episodes = list(range(1, len(self.node.episode_rewards) + 1))
+        epsilon_episodes = list(range(1, len(self.node.epsilon_list) + 1))
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(episodes, self.node.episode_rewards, label='Episode Reward', marker='o')
-        plt.xlabel('Episode')
-        plt.ylabel('Cumulative Reward')
-        plt.title('Episode Rewards Over Time')
-        plt.grid(True)
-        plt.legend()
+        # Create the figure and axis
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+
+        # Plot rewards on the primary y-axis
+        ax1.plot(episodes, self.node.episode_rewards, label='Episode Reward', color='blue')
+        ax1.set_xlabel('Episodes')
+        ax1.set_ylabel('Mean Reward', color='blue')
+        ax1.tick_params(axis='y', labelcolor='blue')
+        ax1.grid(True)
+
+        # Create a secondary y-axis for epsilon decay
+        ax2 = ax1.twinx()
+        ax2.plot(epsilon_episodes, self.node.epsilon_list, label='Epsilon Decay', color='red', linestyle='--')
+        ax2.set_ylabel('Epsilon Decay', color='red')
+        ax2.tick_params(axis='y', labelcolor='red')
+
+        # Add title and legends
+        fig.suptitle('Episode Rewards and Epsilon Decay Over Time')
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+
+        # Save the graph to file
         plt.savefig(GRAPH_FILE)
         plt.close()
 

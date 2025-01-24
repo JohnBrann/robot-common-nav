@@ -46,7 +46,7 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if action is selected, FAILURE otherwise
         """
 
-        discrete_actions = [0, 1, 2, 3, 4]
+        discrete_actions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         if random.random() < self.node.epsilon:
             selected_action = random.choice(discrete_actions)
@@ -59,9 +59,6 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
 
             self.node.action = selected_action
             self.node.get_logger().info(f"Action Selected by NN:  [{selected_action}]")
-
-        if self.node.epsilon > 0.1:
-            self.node.epsilon = self.node.epsilon * 0.9999
 
         self.publish_twist(selected_action)
 
@@ -80,23 +77,38 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
 
         if selected_action == 0:
             # self.node.get_logger().info("Selected 0: turning hard left")
-            twist.linear.x = 0.2
+            twist.linear.x = 0.18
             twist.angular.z = 1.0
         elif selected_action == 1:
             # self.node.get_logger().info("Selected 1: turning slight left")
-            twist.linear.x = 0.2
+            twist.linear.x = 0.18
             twist.angular.z = 0.3
         elif selected_action == 2:
             # self.node.get_logger().info("Selected 2: going straight")
-            twist.linear.x = 0.2
+            twist.linear.x = 0.18
             twist.angular.z = 0.0
         elif selected_action == 3:
             # self.node.get_logger().info("Selected 3: turning slight right")
-            twist.linear.x = 0.2
+            twist.linear.x = 0.18
             twist.angular.z = -0.3
         elif selected_action == 4:
             # self.node.get_logger().info("Selected 4: turning hard right")
-            twist.linear.x = 0.2
+            twist.linear.x = 0.18
+            twist.angular.z = -1.0
+        elif selected_action == 5:
+            twist.linear.x = 0.05
+            twist.angular.z = 1.0
+        elif selected_action == 6:
+            twist.linear.x = 0.05
+            twist.angular.z = 0.3
+        elif selected_action == 7:
+            twist.linear.x = 0.05
+            twist.angular.z = 0.0
+        elif selected_action == 8:
+            twist.linear.x = 0.05
+            twist.angular.z = -0.3
+        elif selected_action == 9:
+            twist.linear.x = 0.05
             twist.angular.z = -1.0
 
         self.publisher.publish(twist)

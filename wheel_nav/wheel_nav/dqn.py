@@ -4,7 +4,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 class DQN(nn.Module):
-    def __init__(self, state_size, action_size, hidden_size=64):
+    def __init__(self, state_size, action_size, hidden_size):
         """
         Initialize the Deep Q-Network.
 

@@ -66,6 +66,11 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
 
             # Reset episode reward
             self.node.reset_episode_reward()
+
+            # decay epsilon value
+            if self.node.epsilon > 0.1:
+                self.node.epsilon = self.node.epsilon * 0.99
+                self.node.epsilon_list.append(self.node.epsilon)
             
             
 
@@ -87,7 +92,7 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             if future.result() is not None:
                 success = future.result().success
                 if success:
-                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({future.result().x} ,{future.result().y} )")
+                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({future.result().x} ,{future.result().y})")
                 else:
                     self.node.get_logger().error("Goal update failed")
                     return py_trees.common.Status.FAILURE

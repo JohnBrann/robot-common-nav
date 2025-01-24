@@ -23,16 +23,11 @@ class MemoryLengthState(py_trees.behaviour.Behaviour):
             with offline rendering of this behaviour in a tree to dot graph
             or validation of the behaviour's configuration.
         """
-
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
         
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
-        
 
     def update(self):
         """

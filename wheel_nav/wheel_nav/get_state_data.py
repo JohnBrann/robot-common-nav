@@ -33,10 +33,10 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.reward = None
 
         # Normalization constants
+        # These values should become dynamic to the environment in the future
         self.MAX_GOAL_DISTANCE = 5.0  # Example max distance to goal in meters
         self.MAX_SCAN_DISTANCE = 3.5  # Example max range of LiDAR in meters
-        self.MAX_VELOCITY = 1.0        # Example max velocity in m/s
-
+        self.MAX_VELOCITY = 1.0       # Example max velocity in m/s
 
         # Subscribe to the StepData topic
         self.subscription = self.node.create_subscription(
@@ -45,24 +45,24 @@ class GetStateData(py_trees.behaviour.Behaviour):
             self.listener_callback,
             10
         )
-        # self.subscription  # prevent unused variable warning # do we need? 
+        # self.subscription  # prevent unused variable warning
 
     def setup(self):
         """
         One-time initialization that might be required for this behavior.
         Here we can print or log messages if needed.
         """
-        # self.node.get_logger().info("Reward calculation setup completed.")
 
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info("Calculating reward from current state...")
 
     def update(self):
         """
-        Set node specific variable to state data 
+        Set node specific variable to state data
+
+        Data is normalized from [0,1]. This is common practice in RL
         
         Returns:
             py_trees.common.Status: SUCCESS if reward calculation is successful, FAILURE otherwise.
@@ -72,8 +72,6 @@ class GetStateData(py_trees.behaviour.Behaviour):
             # self.node.get_logger().info("Waiting for state data...")
             return py_trees.common.Status.RUNNING
         
-
-
         self.node.distance_to_goal = self.normalize_distance(self.distance_to_goal)
         self.node.angle_to_goal = self.normalize_angle(self.angle_to_goal)
         self.node.scan_data = self.normalize_scan_data(self.scan_data)
@@ -120,36 +118,13 @@ class GetStateData(py_trees.behaviour.Behaviour):
         # Store tensor for later use
         self.node.new_state = state_tensor
 
-        # self.node.distance_to_goal = self.distance_to_goal
-        # self.node.angle_to_goal = self.angle_to_goal
-        # self.node.scan_data = self.scan_data
-        # self.node.min_obstacle_distance = self.min_obstacle_distance
-        # self.node.angular_velocity = self.angular_velocity
-        # self.node.linear_velocity = self.linear_velocity
-        # self.node.terminated = self.terminated
-        # self.node.success = self.success
-        # self.node.reward = self.reward
-
-        # self.node.get_logger().info(f"Distance to goal: {self.node.distance_to_goal}")
-        # self.node.get_logger().info(f"Angle to goal: {self.node.angle_to_goal}")
-        # self.node.get_logger().info(f"Scan Data: {self.node.scan_data}")
-        # self.node.get_logger().info(f"min_obstacle_distance: {self.node.min_obstacle_distance}")
-        # self.node.get_logger().info(f"angular_velocity: {self.node.angular_velocity}")
-        # self.node.get_logger().info(f"linear_velocity: {self.node.linear_velocity}")
-        # self.node.get_logger().info(f"terminated: {self.node.success}")
-        # self.node.get_logger().info(f"Step Reward: {self.node.reward}")
-
         return py_trees.common.Status.SUCCESS
 
     def terminate(self, new_status):
         """
         This is called when the behaviour switches to a non-running state (SUCCESS, FAILURE, INVALID).
         """
-
         self.callback_called = False
-        # self.reward = None
-        # if new_status != py_trees.common.Status.RUNNING:
-        #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
 
     def listener_callback(self, msg):
         """
@@ -170,11 +145,6 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.reward = msg.reward
 
         self.callback_called = True
-
-        # self.node.get_logger().info("callback called...")
-
-        # self.node.get_logger().info(f"Distance to goalllllllllll: {self.distance_to_goal}")
-        # self.node.get_logger().info(f"Step Reward: {self.reward}")
 
     def normalize_distance(self, distance):
         """Normalize distance to the range [0, 1]."""

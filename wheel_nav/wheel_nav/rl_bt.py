@@ -42,50 +42,64 @@ class RlBehaviorTree(Node):
     def __init__(self):
         super().__init__('rl_bt_node')
 
-        # === Initialize ROS2 parameters ===
-        self.declare_parameter('terminated', False)
-        self.declare_parameter('success', False)
-        self.declare_parameter('reward', 0.0)
-
         # === Variables for tracking episodes ===
         self.current_episode_reward = 0
         self.current_episode = 0
         self.best_episode_reward = -3000
         self.episode_rewards = []
         self.step_count = 0
-        self.max_steps = 150
+        self.epsilon_list = []
+
+        self.declare_parameter('max_steps', 150)
+        self.max_steps = self.get_parameter('max_steps').get_parameter_value().integer_value 
         
-        # === Graphing ===
+        # === Model/Graph ===
         self.MODEL_FILE = os.path.join("src", f'dqn.pt')
 
-        # === Exploration/Exploitation settings === rosparam
-        self.epsilon = 0.5
+        # === Exploration/Exploitation settings === 
+        self.declare_parameter('epsilon', 0.5)
+        self.epsilon = self.get_parameter('epsilon').get_parameter_value().double_value
 
-        # === RL Model Parameters === rosparam
-        self.fc1_nodes = 64
-        self.num_states = 11
-        self.num_actions = 5
-        self.learning_rate_a = 0.003
-        self.discount_factor_g = 0.95
-        self.loss_fn = nn.MSELoss()
+        # === RL Model Parameters === 
+        self.declare_parameter('fc1_nodes', 64)
+        self.declare_parameter('num_states', 11)
+        self.declare_parameter('num_actions', 10)
+        self.declare_parameter('learning_rate_a', 0.003)
+        self.declare_parameter('discount_factor_g', 0.98)
+
+        self.num_states = self.get_parameter('num_states').get_parameter_value().integer_value
+        self.num_actions = self.get_parameter('num_actions').get_parameter_value().integer_value
+        self.fc1_nodes = self.get_parameter('fc1_nodes').get_parameter_value().integer_value
+        self.learning_rate_a = self.get_parameter('learning_rate_a').get_parameter_value().double_value
+        self.discount_factor_g = self.get_parameter('discount_factor_g').get_parameter_value().double_value
 
 
-        # === Model and Replay Memory === 
-        self.replay_memory_size = 10000
-        self.mini_batch_size = 100
+        # === Replay Memory === 
+        self.declare_parameter('replay_memory_size', 10000)
+        self.declare_parameter('mini_batch_size', 64)
+        self.replay_memory_size = self.get_parameter('replay_memory_size').get_parameter_value().integer_value
+        self.mini_batch_size =  self.get_parameter('mini_batch_size').get_parameter_value().integer_value
+
         self.memory = ReplayMemory(self.replay_memory_size)
+
+        # === Models ===
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.policy_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
         self.target_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
         self.target_dqn.load_state_dict(self.policy_dqn.state_dict())
+        
         self.optimizer = torch.optim.Adam(self.policy_dqn.parameters(), lr=self.learning_rate_a)
+        self.loss_fn = nn.MSELoss()
 
         # === Flags ===
+        self.declare_parameter('is_discrete', True)
+        self.declare_parameter('is_training', True)
+        self.is_discrete = self.get_parameter('is_discrete').get_parameter_value().bool_value
+        self.is_training = self.get_parameter('is_training').get_parameter_value().bool_value
+
         self.training_started = False
         self.allow_optimization = False
-        self.is_discrete = True
-        self.is_training = True
 
         # === Environment State Data ===
         self.distance_to_goal = None
@@ -186,7 +200,7 @@ class RlBehaviorTree(Node):
         # === Model Optimization ===
         memory_length_state = MemoryLengthState(self, "memory_length?")
         optimization_step_state = AllowOptimizationState(self, "optimization step?")
-        dqn_optimization = DQNModelOptimization(self, "DQN Model Optimization")
+        dqn_optimization = DQNModelOptimization(self, "DQN Model Optimization", self.device)
 
         optimization_sel = py_trees.composites.Selector("Optimization", memory=True)
         optimization_sel.add_children([memory_length_state, optimization_step_state, dqn_optimization])
@@ -229,8 +243,6 @@ class RlBehaviorTree(Node):
             while rclpy.ok():
                 # Tick the behavior tree
                 self.tree.tick()
-
-                # self.get_logger().info(f"Total Steps: {self.step_count}")
 
                 # Allow time for ROS2 to process messages
                 rclpy.spin_once(self, timeout_sec=0.1)

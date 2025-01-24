@@ -23,30 +23,25 @@ class AllowOptimizationState(py_trees.behaviour.Behaviour):
             with offline rendering of this behaviour in a tree to dot graph
             or validation of the behaviour's configuration.
         """
-
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
         
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
         
-
     def update(self):
         """
-        We only want to optimze the model at the end of an episode
-        Flag created for this 
+        Most DRL algorithms have delayed optimization, meaning optimzation does not happen after every step
+        This behavior acts as a flag that allow the model to optimize after n steps
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-
-
-        if self.node.step_count % 150 == 0:
+        if self.node.step_count % 50 == 0:
+            # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
             return py_trees.common.Status.FAILURE
 
         if self.node.allow_optimization:
+            # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
             return py_trees.common.Status.FAILURE
         else:
             return py_trees.common.Status.SUCCESS
@@ -57,5 +52,5 @@ class AllowOptimizationState(py_trees.behaviour.Behaviour):
             SUCCESS || FAILURE || INVALID
         """
         self.node.allow_optimization = False
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
+        
 

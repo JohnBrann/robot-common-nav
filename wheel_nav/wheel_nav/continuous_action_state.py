@@ -26,19 +26,14 @@ class ContinuousActionState(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
-        
 
     def update(self):
         """
-        Check the 'is_training' parameter
+        Flag to see if the action to be selected is continuous
         
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
@@ -47,7 +42,7 @@ class ContinuousActionState(py_trees.behaviour.Behaviour):
         if self.is_discrete:
             return py_trees.common.Status.FAILURE
         else:
-            self.node.get_logger().info(f"Action Space is Continuous")
+            # self.node.get_logger().info(f"Action Space is Continuous")
             return py_trees.common.Status.SUCCESS
         
     def terminate(self, new_status):
@@ -55,5 +50,4 @@ class ContinuousActionState(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 

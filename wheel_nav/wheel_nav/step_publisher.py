@@ -126,7 +126,7 @@ class StepPublisher(Node):
 
     def calc_distance_to_goal(self):
         distance = np.sqrt(np.sum((self.current_pos - self.current_goal_pos) ** 2))
-        self.success = distance < 0.2
+        self.success = distance < 0.25
         return distance
 
     def calc_angle_to_goal(self, yaw):
