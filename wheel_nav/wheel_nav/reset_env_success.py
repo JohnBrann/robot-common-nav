@@ -1,9 +1,9 @@
 import rclpy
 import py_trees
 import py_trees_ros
-from wheel_nav_msgs.srv import GoalUpdate
-
 import torch 
+
+from wheel_nav_msgs.srv import GoalUpdate
 
 class ResetEnvSuccess(py_trees.behaviour.Behaviour):
     def __init__(self, node, name):
@@ -16,13 +16,12 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-        self.goal_update_client = self.node.create_client(GoalUpdate, 'goal_update')  # Service client
+        self.goal_update_client = self.node.create_client(GoalUpdate, 'goal_update') 
 
     def setup(self):
         """
         Setup any delayed initialization needed for the behavior.
         """
-        # self.node.get_logger().info("Setting up ResetEnvState behavior...")
 
     def initialise(self):
         """
@@ -41,13 +40,6 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
             self.node.success = False
             self.node.terminated = False
             self.node.reward = 0.0
-
-            # Set parameters related to the episode state
-            # self.node.set_parameters([
-            #     rclpy.parameter.Parameter('success', rclpy.Parameter.Type.BOOL, False),
-            #     rclpy.parameter.Parameter('terminated', rclpy.Parameter.Type.BOOL, False),
-            #     rclpy.parameter.Parameter('reward', rclpy.Parameter.Type.DOUBLE, 0.0),
-            # ])
 
             # Reset step count and episode count
             self.node.reset_step_count()
@@ -69,11 +61,10 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
 
             # decay epsilon value
             if self.node.epsilon > 0.1:
-                self.node.epsilon = self.node.epsilon * 0.99
+                self.node.epsilon = self.node.epsilon * 0.985
                 self.node.epsilon_list.append(self.node.epsilon)
             
-            
-
+    
             # Make the service call to update the goal
             if not self.goal_update_client.wait_for_service(timeout_sec=1.0):
                 self.node.get_logger().error('Goal Update service not available')
@@ -111,4 +102,3 @@ class ResetEnvSuccess(py_trees.behaviour.Behaviour):
         """
         Clean up when the behavior switches to a non-running state.
         """
-        # self.node.get_logger().info(f"ResetEnvState terminated with status: {new_status}")

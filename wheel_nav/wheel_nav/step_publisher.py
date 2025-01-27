@@ -11,6 +11,41 @@ from rclpy.node import Node
 import numpy as np
 import math
 
+"""
+Node: StepPublisher
+
+Description:
+    The StepPublisher node is responsible for publishing robot state information to the `step_data` topic.
+    The node integrates data from odometry, LiDAR, and goal position to compute 
+    essential metrics such as the distance and angle to the goal, obstacle proximity, and a calculated reward 
+    based on the robot's performance.
+
+Published Topic:
+    - Topic: `step_data` (type: wheel_nav_msgs.msg.StepData)
+        This topic publishes a `StepData` message containing the following fields:
+        - `float32 distance_to_goal`: The Euclidean distance from the robot to the goal position.
+        - `float32 angle_to_goal`: The angular difference between the robot's orientation and the goal.
+        - `float32[] scan_data`: Selected LiDAR scan points representing the environment.
+        - `float32 min_obstacle_distance`: The minimum distance to any obstacle detected by the LiDAR.
+        - `float32 linear_velocity`: The current linear velocity of the robot.
+        - `float32 angular_velocity`: The current angular velocity of the robot.
+        - `bool success`: Indicates if the goal has been reached (distance < 0.25 meters).
+        - `bool terminated`: Indicates if the episode was terminated due to collision or other criteria.
+        - `float32 reward`: A reward signal calculated using the robot's performance metrics.
+        - `float32 init_goal_distance`: The initial distance to the goal at the start of the episode.
+
+Features:
+    - Computes the Euclidean distance and angular difference to the goal.
+    - Selects a subset of LiDAR scan points for compact representation and calculates the minimum obstacle distance.
+    - Evaluates success when the robot is within goal distance
+    - Triggers episode termination if the robot is too close to an obstacle
+    - Resets episode data upon success or termination and updates the reward based on distance, angle, and velocities.
+
+Usage:
+    This node is designed to provide feedback for training reinforcement learning models in a simulation 
+    environment.
+"""
+
 
 class StepPublisher(Node):
     def __init__(self):
@@ -65,7 +100,6 @@ class StepPublisher(Node):
             self.min_obstacle_distance, self.success, self.terminated,
             self.linear_x, self.angular_z
         )
-
 
         # Prepare and publish the StepData message
         msg = StepData()
@@ -136,14 +170,11 @@ class StepPublisher(Node):
         angle_diff = math.atan2(math.sin(angle_to_goal - yaw), math.cos(angle_to_goal - yaw))
         return abs(angle_diff)
 
-
-
 def main(args=None):
     rclpy.init(args=args)
     step_publisher = StepPublisher()
     rclpy.spin(step_publisher)
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()

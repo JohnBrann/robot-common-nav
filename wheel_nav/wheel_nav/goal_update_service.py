@@ -10,7 +10,7 @@ import random
 """
 This is a service that when called will create a publisher that publishes a new waypoint (x,y) to the GoalPosition topic.
 Currently, the waypoint is randomly generated from a range of coordinates. In an open space this is fine, however, 
-    in an environment with many obstacles, it is not that simple.
+    in an environment with many obstacles, it is not that simple. Would have to account for obstacles
 Consider generating semi-random waypoints (from a list of valid waypoints) or other methods.
 """
 
@@ -36,7 +36,7 @@ class GoalService(Node):
         # Create a GoalPosition message with the new goal coordinates
         goal_msg = GoalPosition()
 
-        # Randomly generate a Goal
+        # Randomly generate a Goal from a range
         # goal_msg.x = round(random.uniform(self.goal_range[0], self.goal_range[1]), 2)
         # goal_msg.y = round(random.uniform(self.goal_range[0], self.goal_range[1]), 2)
 

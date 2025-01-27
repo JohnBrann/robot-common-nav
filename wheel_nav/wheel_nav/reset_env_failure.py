@@ -79,7 +79,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
 
             # decay epsilon value
             if self.node.epsilon > 0.1:
-                self.node.epsilon = self.node.epsilon * 0.99
+                self.node.epsilon = self.node.epsilon * 0.985
                 self.node.epsilon_list.append(self.node.epsilon)
             
             # Create request object
@@ -103,7 +103,6 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
                 self.node.get_logger().error("Service call failed")
                 return py_trees.common.Status.FAILURE
 
-            # self.node.get_logger().info("Environment reset successfully")
             return py_trees.common.Status.SUCCESS
 
         except Exception as e:

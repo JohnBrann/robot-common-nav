@@ -67,6 +67,7 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
     def update(self):
         """
         Set node-specific variable to state data and convert it to a PyTorch tensor.
+        Data is normalized to [0,1] so it is more digestable for NN
         
         Returns:
             py_trees.common.Status: SUCCESS if state consolidation and conversion is successful, FAILURE otherwise.
@@ -122,7 +123,6 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
         # Store tensor for later use
         self.node.state = state_tensor
 
-
         # Log the tensor for debugging
         # self.node.get_logger().info(f"State tensor: {state_tensor}")
 
@@ -134,10 +134,7 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
         """
 
         self.callback_called = False
-        # self.reward = None
-        # if new_status != py_trees.common.Status.RUNNING:
-        #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
-
+    
     def listener_callback(self, msg):
         """
         Callback to get state data to append to be used at the start of the episode
@@ -158,7 +155,6 @@ class SetInitialTrainingState(py_trees.behaviour.Behaviour):
 
         self.callback_called = True
 
-        # self.node.get_logger().info("callback called...")
 
     def normalize_distance(self, distance):
         """Normalize distance to the range [0, 1]."""

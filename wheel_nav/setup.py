@@ -29,7 +29,6 @@ setup(
             'simple_nav_bt = wheel_nav.simple_nav_bt:main',
             'patrol_a_bt = wheel_nav.patrol_a_bt:main',
             'reward = wheel_nav.reward:main',
-            "blackboard_test = wheel_nav.blackboard_test:main",
             'step_publisher = wheel_nav.step_publisher:main',
             'rl_bt = wheel_nav.rl_bt:main',
             'goal_update_service = wheel_nav.goal_update_service:main',

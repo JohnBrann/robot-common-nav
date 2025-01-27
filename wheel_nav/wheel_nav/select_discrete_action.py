@@ -16,10 +16,8 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-        # self.epsilon = 0.2 # 0 for testing purposes
-        self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10) # make this into a service call? seperate into another behavior?
+        self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10) 
         
-
     def setup(self):
         """
           What to do here?
@@ -28,24 +26,24 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
         # self.node.get_logger().info(f"Selecting action...")
         
-
     def update(self):
         """
-        Selects a discrete action, exploration and exploitation
+        Selects a discrete action, exploration or exploitation
+
+        With the DQN algorithm, actions are selcted either from the policy network or a random action is taken
+        from the available ones. When implementing other discrete action algorithms such as A2C or SAC, this process
+        may look different
         
         Returns:
             py_trees.common.Status: SUCCESS if action is selected, FAILURE otherwise
         """
-
+        # list of possible actions to take
         discrete_actions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         if random.random() < self.node.epsilon:
@@ -72,6 +70,10 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
         # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
     def publish_twist(self, selected_action):
+        """
+        Declaration of discrete actrions below. These can be modified.
+        Currently is a left, slight left, straight, slight right, right (for both slow and fast speeds)
+        """
 
         twist = Twist()
 

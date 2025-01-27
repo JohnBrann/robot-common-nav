@@ -7,7 +7,6 @@ import py_trees_ros
 import py_trees.display
 import torch
 from torch import nn
-import matplotlib.pyplot as plt
 
 from py_trees.visitors import SnapshotVisitor
 from py_trees.display import unicode_tree
@@ -98,7 +97,10 @@ class RlBehaviorTree(Node):
         self.is_discrete = self.get_parameter('is_discrete').get_parameter_value().bool_value
         self.is_training = self.get_parameter('is_training').get_parameter_value().bool_value
 
-        self.training_started = False
+
+        self.declare_parameter('training_started', False)
+        self.training_started = self.get_parameter('training_started').get_parameter_value().bool_value
+        
         self.allow_optimization = False
 
         # === Environment State Data ===

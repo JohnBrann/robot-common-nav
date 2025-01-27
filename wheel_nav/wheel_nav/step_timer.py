@@ -19,7 +19,7 @@ class StepTimer(py_trees.behaviour.Behaviour):
         # Initialize the timer
         self.time_limit_reached = False
 
-        self.timer = self.node.create_timer(0.3, self.timer_callback) # 1.0 is the period in seconds
+        self.timer = self.node.create_timer(0.3, self.timer_callback) 
 
 
     def setup(self):
@@ -37,9 +37,9 @@ class StepTimer(py_trees.behaviour.Behaviour):
 
     def update(self):
         """
-        Create a timer that acts as a delay fro each step,
+        Create a timer that acts as a delay for each step,
         Allows steps to not happen too fast so robot can have time to make decisions
-        that ahve impact
+        that has an impact
         
         Returns:
             py_trees.common.Status: SUCCESS if reward calculation is successful, FAILURE otherwise.
@@ -50,7 +50,6 @@ class StepTimer(py_trees.behaviour.Behaviour):
             return py_trees.common.Status.RUNNING
         elif self.time_limit_reached == True:
             # self.node.get_logger().info(f"Time limit reached.. continue...")
-            # Return SUCCESS if reward is available
             return py_trees.common.Status.SUCCESS
 
     def terminate(self, new_status):
@@ -58,8 +57,6 @@ class StepTimer(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state (SUCCESS, FAILURE, INVALID).
         """
         self.time_limit_reached = False
-        # if new_status != py_trees.common.Status.RUNNING:
-        #     self.node.get_logger().info(f"Terminating reward calculation with status {new_status}")
 
     def timer_callback(self):
         """
@@ -70,4 +67,3 @@ class StepTimer(py_trees.behaviour.Behaviour):
         """
         # Extract reward from the message
         self.time_limit_reached = True
-        # self.node.get_logger().info(f"Received step reward: {self.reward}")

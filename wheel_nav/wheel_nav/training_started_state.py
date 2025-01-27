@@ -25,16 +25,11 @@ class TrainingStartedState(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
         self.training_started = self.node.training_started
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
-        
 
     def update(self):
         """
@@ -53,5 +48,4 @@ class TrainingStartedState(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
