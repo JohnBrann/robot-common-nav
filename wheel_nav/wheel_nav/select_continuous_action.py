@@ -1,6 +1,7 @@
 import rclpy 
 import py_trees
 import random
+import numpy as np
 
 from geometry_msgs.msg import Twist
 
@@ -28,16 +29,11 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        self.node.get_logger().info(f"Selecting action...")
         
-
     def update(self):
         """
         In the future, this will check the discrete or continuous parameter, or there will be another ndoe just for the discrete parameter
@@ -46,18 +42,31 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
 
-        # discrete_actions = [0, 1, 2, 3, 4]
+        # Define action bounds
+        linear_velocity_low = 0.0
+        linear_velocity_high = 0.2
+        angular_velocity_low = -1.0
+        angular_velocity_high = 1.0
 
-        # if random.random.sample() < self.epsilon:
-        #     selected_action = random.choice(discrete_actions)
-        # else:
-        #     # select action from the NN
-        #     selected_action = 2
+        # Get the action from the actor network (ensure it's compatible with numpy)
+        state = self.node.state  # The current state must be provided
+        action = self.node.actor(state).cpu().data.numpy().flatten()
 
+        # Scale and clip the actions to their valid ranges
+        linear_velocity = np.clip(action[0], linear_velocity_low, linear_velocity_high)
+        angular_velocity = np.clip(action[1], angular_velocity_low, angular_velocity_high)
 
-        # selected_action = 2
+        # Add noise for exploration (during training)
+        if self.epsilon > 0.0:
+            linear_velocity += np.random.uniform(-self.epsilon, self.epsilon)
+            angular_velocity += np.random.uniform(-self.epsilon, self.epsilon)
 
-        # self.publish_action(1)
+            # Clip again after adding noise
+            linear_velocity = np.clip(linear_velocity, linear_velocity_low, linear_velocity_high)
+            angular_velocity = np.clip(angular_velocity, angular_velocity_low, angular_velocity_high)
+
+        # Publish the action
+        self.publish_twist(linear_velocity, angular_velocity)
 
         return py_trees.common.Status.SUCCESS
         
@@ -66,14 +75,19 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
         This is called when the behaviour switches to a non-running state.
             SUCCESS || FAILURE || INVALID
         """
-        # self.node.get_logger().info(f"Terminating TrainingModeState with status {new_status}")
 
-    def publish_twist(self, selected_action):
-
+    def publish_twist(self, linear_velocity, angular_velocity):
+        """
+        Publish the selected action as a Twist message.
+        
+        Args:
+            linear_velocity (float): Linear velocity for the TurtleBot
+            angular_velocity (float): Angular velocity for the TurtleBot
+        """
         twist = Twist()
-
-
-        twist.linear.x = 0.1
-        twist.angular.z = -1.0
-
+        twist.linear.x = linear_velocity
+        twist.angular.z = angular_velocity
         self.publisher.publish(twist)
+        self.node.get_logger().info(
+            f"Published action: linear_velocity = {linear_velocity:.2f}, angular_velocity = {angular_velocity:.2f}"
+        )

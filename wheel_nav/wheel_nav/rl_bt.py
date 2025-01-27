@@ -7,11 +7,13 @@ import py_trees_ros
 import py_trees.display
 import torch
 from torch import nn
+import numpy as np
 
 from py_trees.visitors import SnapshotVisitor
 from py_trees.display import unicode_tree
 
 from wheel_nav.dqn import DQN
+from wheel_nav.ddpg import Actor, Critic
 from wheel_nav.experience_replay import ReplayMemory
 from wheel_nav.testing_state import TestingModeState
 from wheel_nav.training_state import TrainingModeState
@@ -35,6 +37,9 @@ from wheel_nav.dqn_model_optimization import DQNModelOptimization
 from wheel_nav.memory_length_state import MemoryLengthState
 from wheel_nav.allow_optimization_state import AllowOptimizationState
 from wheel_nav.plot_graph import PlotGraph
+from wheel_nav.ddpg_model_optimization import DDPGModelOptimization
+from wheel_nav.dqn_state import DQNState
+from wheel_nav.ddpg_state import DDPGState
 
 
 class RlBehaviorTree(Node):
@@ -72,6 +77,8 @@ class RlBehaviorTree(Node):
         self.learning_rate_a = self.get_parameter('learning_rate_a').get_parameter_value().double_value
         self.discount_factor_g = self.get_parameter('discount_factor_g').get_parameter_value().double_value
 
+        self.actor_hidden_layer = 128
+        self.critic_hidden_layer = 128
 
         # === Replay Memory === 
         self.declare_parameter('replay_memory_size', 10000)
@@ -81,15 +88,6 @@ class RlBehaviorTree(Node):
 
         self.memory = ReplayMemory(self.replay_memory_size)
 
-        # === Models ===
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        self.policy_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
-        self.target_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
-        self.target_dqn.load_state_dict(self.policy_dqn.state_dict())
-        
-        self.optimizer = torch.optim.Adam(self.policy_dqn.parameters(), lr=self.learning_rate_a)
-        self.loss_fn = nn.MSELoss()
 
         # === Flags ===
         self.declare_parameter('is_discrete', True)
@@ -100,9 +98,46 @@ class RlBehaviorTree(Node):
 
         self.declare_parameter('training_started', False)
         self.training_started = self.get_parameter('training_started').get_parameter_value().bool_value
-        
-        self.allow_optimization = False
 
+        self.allow_optimization = False
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        self.dqn_state = False
+        self.ddpg_state = False
+
+
+        # === Models ===
+        if self.is_discrete:
+            self.dqn_state = True
+            self.policy_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
+            self.target_dqn = DQN(self.num_states, self.num_actions, self.fc1_nodes).to(self.device)
+            self.target_dqn.load_state_dict(self.policy_dqn.state_dict())
+            
+            self.optimizer = torch.optim.Adam(self.policy_dqn.parameters(), lr=self.learning_rate_a)
+            self.loss_fn = nn.MSELoss()
+        else:
+            self.ddpg_state = True
+
+            # Define maximum action scaling
+            self.max_action = np.array([0.5, 1.0]) # Linear velocity max = 0.5, Angular velocity max = 1.0
+            self.num_actions = 2
+
+            # DDPG
+            self.actor = Actor(self.num_states, self.num_actions, self.max_action, self.actor_hidden_layer).to(self.device)
+            self.critic = Critic(self.num_states, self.num_actions, self.max_action, self.critic_hidden_layer).to(self.device)
+
+            # Initialize Actor Target Network
+            self.actor_target = Actor(self.num_states, self.num_actions, self.max_action, self.actor_hidden_layer).to(self.device)
+            self.actor_target.load_state_dict(self.actor.state_dict())
+
+            # Initialize Critic Networks (Critic and Critic Target)
+            self.critic_target = Critic(self.num_states, self.num_actions, self.critic_hidden_layer).to(self.device)
+            self.critic_target.load_state_dict(self.critic.state_dict())
+
+            # Initialize optimizers
+            self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=self.learning_rate_a)
+            self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=self.learning_rate_a)
+        
         # === Environment State Data ===
         self.distance_to_goal = None
         self.angle_to_goal = None
@@ -198,14 +233,26 @@ class RlBehaviorTree(Node):
         episode_state = py_trees.composites.Selector("Episode State", memory=True)
         episode_state.add_children([success_state_seq, terminated_state_seq, running_state_seq])
 
-
         # === Model Optimization ===
         memory_length_state = MemoryLengthState(self, "memory_length?")
         optimization_step_state = AllowOptimizationState(self, "optimization step?")
+
+        # DQN
+        dqn_state = DQNState(self, "dqn_state?", self.dqn_state)
         dqn_optimization = DQNModelOptimization(self, "DQN Model Optimization", self.device)
 
+        dqn_optimization_seq = py_trees.composites.Sequence("DQN Optimzation Sequence", memory=True)
+        dqn_optimization_seq.add_children([dqn_state, dqn_optimization])
+
+        # DDPG    
+        ddpg_state = DDPGState(self, "ddpg_state?", self.ddpg_state)
+        ddpg_optimization = DDPGModelOptimization(self, "DDPG Model Optimzization", self.device)
+
+        ddpg_optimization_seq = py_trees.composites.Sequence("DDPG Optimzation Sequence", memory=True)
+        ddpg_optimization_seq.add_children([ddpg_state, ddpg_optimization])
+
         optimization_sel = py_trees.composites.Selector("Optimization", memory=True)
-        optimization_sel.add_children([memory_length_state, optimization_step_state, dqn_optimization])
+        optimization_sel.add_children([memory_length_state, optimization_step_state, dqn_optimization_seq, ddpg_optimization_seq])
 
 
         # === Step Delay ===
