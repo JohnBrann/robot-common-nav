@@ -53,35 +53,38 @@ class RlBehaviorTree(Node):
         self.episode_rewards = []
         self.step_count = 0
         self.epsilon_list = []
+        self.episode_results = []
 
-        self.declare_parameter('max_steps', 150)
+        self.declare_parameter('max_steps', 100)
         self.max_steps = self.get_parameter('max_steps').get_parameter_value().integer_value 
         
         # === Model/Graph ===
-        self.MODEL_FILE = os.path.join("src", f'dqn.pt')
+        self.MODEL_FILE = os.path.join("src", f'ddpg_2.pt')
 
         # === Exploration/Exploitation settings === 
         self.declare_parameter('epsilon', 0.5)
         self.epsilon = self.get_parameter('epsilon').get_parameter_value().double_value
 
         # === RL Model Parameters === 
-        self.declare_parameter('fc1_nodes', 64)
+        self.declare_parameter('fc1_nodes', 256)
         self.declare_parameter('num_states', 11)
         self.declare_parameter('num_actions', 10)
-        self.declare_parameter('learning_rate_a', 0.003)
+        self.declare_parameter('learning_rate_a', 0.005)
         self.declare_parameter('discount_factor_g', 0.98)
+        self.declare_parameter('tau', 0.005)
 
         self.num_states = self.get_parameter('num_states').get_parameter_value().integer_value
         self.num_actions = self.get_parameter('num_actions').get_parameter_value().integer_value
         self.fc1_nodes = self.get_parameter('fc1_nodes').get_parameter_value().integer_value
         self.learning_rate_a = self.get_parameter('learning_rate_a').get_parameter_value().double_value
         self.discount_factor_g = self.get_parameter('discount_factor_g').get_parameter_value().double_value
+        self.tau = self.get_parameter('tau').get_parameter_value().double_value
 
-        self.actor_hidden_layer = 128
-        self.critic_hidden_layer = 128
+        self.actor_hidden_layer = 256
+        self.critic_hidden_layer = 256
 
         # === Replay Memory === 
-        self.declare_parameter('replay_memory_size', 10000)
+        self.declare_parameter('replay_memory_size', 1000)
         self.declare_parameter('mini_batch_size', 64)
         self.replay_memory_size = self.get_parameter('replay_memory_size').get_parameter_value().integer_value
         self.mini_batch_size =  self.get_parameter('mini_batch_size').get_parameter_value().integer_value
@@ -90,7 +93,7 @@ class RlBehaviorTree(Node):
 
 
         # === Flags ===
-        self.declare_parameter('is_discrete', True)
+        self.declare_parameter('is_discrete', False)
         self.declare_parameter('is_training', True)
         self.is_discrete = self.get_parameter('is_discrete').get_parameter_value().bool_value
         self.is_training = self.get_parameter('is_training').get_parameter_value().bool_value
@@ -131,7 +134,7 @@ class RlBehaviorTree(Node):
             self.actor_target.load_state_dict(self.actor.state_dict())
 
             # Initialize Critic Networks (Critic and Critic Target)
-            self.critic_target = Critic(self.num_states, self.num_actions, self.critic_hidden_layer).to(self.device)
+            self.critic_target = Critic(self.num_states, self.num_actions, self.max_action, self.critic_hidden_layer).to(self.device)
             self.critic_target.load_state_dict(self.critic.state_dict())
 
             # Initialize optimizers
@@ -154,14 +157,18 @@ class RlBehaviorTree(Node):
         # Create a behavior tree
         self.create_behavior_tree()
 
-        # # Initialize the SnapshotVisitor
-        # self.snapshot_visitor = SnapshotVisitor()
+        '''
+        Uncommment the below lines to get a runtime visualization of the behavior tree
+        
+        # Initialize the SnapshotVisitor
+        self.snapshot_visitor = SnapshotVisitor()
 
-        # # Add the post-tick handler to the tree
-        # self.tree.add_post_tick_handler(
-        #     functools.partial(self.post_tick_handler, self.snapshot_visitor)
-        # )
-        # self.tree.visitors.append(self.snapshot_visitor)
+        # Add the post-tick handler to the tree
+        self.tree.add_post_tick_handler(
+            functools.partial(self.post_tick_handler, self.snapshot_visitor)
+        )
+        self.tree.visitors.append(self.snapshot_visitor)
+        '''
 
         
     def create_behavior_tree(self):
@@ -350,6 +357,12 @@ class RlBehaviorTree(Node):
 
     def episode_truncated(self):
         return self.step_count > self.max_steps
+    
+    def add_to_results(self, result):
+        if result == True:
+            self.episode_results.append(1)
+        else:
+            self.episode_results.append(0)
 
 def main(args=None):
     rclpy.init(args=args)

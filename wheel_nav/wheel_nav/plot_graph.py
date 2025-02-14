@@ -40,6 +40,7 @@ class PlotGraph(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
         self.plot_episode_rewards()
+        self.plot_episode_results()
         
         return py_trees.common.Status.SUCCESS
         
@@ -92,3 +93,35 @@ class PlotGraph(py_trees.behaviour.Behaviour):
         plt.savefig(GRAPH_FILE)
         plt.close()
 
+
+    def plot_episode_results(self):
+        """
+        Plots the episode results over time (e.g., reward, success rate, etc.).
+        """
+        if len(self.node.episode_results) == 0:
+            self.get_logger().warn("No episode results recorded.")
+            return
+        
+        GRAPH_FILE = os.path.join("src", 'episode_results_graph.png')
+
+        # Generate the x-axis for episodes
+        episodes = list(range(1, len(self.node.episode_results) + 1))
+
+        # Create the figure and axis
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # Plot the episode results (e.g., success rate or other metric)
+        ax.plot(episodes, self.node.episode_results, label='Episode Results', color='green')
+
+        # Label axes and add title
+        ax.set_xlabel('Episodes')
+        ax.set_ylabel('Episode Results')
+        ax.set_title('Episode Results Over Time')
+
+        # Add grid and legend
+        ax.grid(True)
+        ax.legend()
+
+        # Save the graph to file
+        plt.savefig(GRAPH_FILE)
+        plt.close()

@@ -48,7 +48,7 @@ class DQNModelOptimization(py_trees.behaviour.Behaviour):
         # Prepare tensors for the batch
         states = torch.stack(states).squeeze(1)  # Shape: [batch_size, state_dim]
         new_states = torch.stack(new_states).squeeze(1)  # Shape: [batch_size, state_dim]
-        actions = torch.tensor(actions, dtype=torch.long, device=self.device)
+        actions = torch.tensor(actions, dtype=torch.float, device=self.device)
         rewards = torch.tensor(rewards, dtype=torch.float, device=self.device)
         terminations = torch.tensor(terminations, dtype=torch.float, device=self.device)
 

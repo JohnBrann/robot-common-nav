@@ -68,9 +68,13 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
             self.node.get_logger().info(f"Episode {current_episode} Reward: {episode_reward}")
 
             self.node.episode_rewards.append(episode_reward)
+            self.node.add_to_results(0)
 
             if current_episode > self.node.best_episode_reward:
-                torch.save(self.node.policy_dqn.state_dict(), self.node.MODEL_FILE)
+                if self.node.dqn_state:
+                    torch.save(self.node.policy_dqn.state_dict(), self.node.MODEL_FILE)
+                elif self.node.ddpg_state:
+                    torch.save(self.node.actor.state_dict(), self.node.MODEL_FILE)
                 self.node.best_episode_reward = episode_reward
 
 

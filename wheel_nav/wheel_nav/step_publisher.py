@@ -55,7 +55,7 @@ class StepPublisher(Node):
         self.scan_initialized = False
 
         # Initialize state variables
-        self.current_goal_pos = np.array([0.0, 0.0])  
+        self.current_goal_pos = np.array([-1.0, 1.0])  
         self.current_pos = np.array([-1.0, 0.0])
         self.current_yaw = 0.0
 
@@ -65,6 +65,7 @@ class StepPublisher(Node):
         self.angular_z = 0.0
         self.scan_data = []
         self.min_obstacle_distance = 100.0
+        self.reward = 0.0
 
         self.success = False
         self.terminated = False
@@ -95,7 +96,7 @@ class StepPublisher(Node):
             self.get_logger().info(f'New episode started. Initial goal distance: {self.init_goal_distance:.2f}')
 
         # Calculate reward
-        reward = rw.calc_reward(
+        self.reward = rw.calc_reward(
             distance_to_goal, self.init_goal_distance, angle_to_goal,
             self.min_obstacle_distance, self.success, self.terminated,
             self.linear_x, self.angular_z
@@ -111,7 +112,7 @@ class StepPublisher(Node):
         msg.angular_velocity = self.angular_z
         msg.success = bool(self.success)
         msg.terminated = self.terminated
-        msg.reward = reward
+        msg.reward = self.reward
         msg.init_goal_distance = self.init_goal_distance # temp data
 
         self.publisher.publish(msg)

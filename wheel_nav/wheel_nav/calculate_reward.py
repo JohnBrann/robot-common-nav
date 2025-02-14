@@ -45,7 +45,7 @@ class CalcReward(py_trees.behaviour.Behaviour):
             # self.node.get_logger().info("Waiting for reward data...")
             return py_trees.common.Status.RUNNING
         
-        self.reward = round(self.reward, 2) 
+        # self.reward = round(self.reward, 2) 
         
         # Log and return the current reward
         self.node.get_logger().info(f"Current Step Reward: {self.reward}")

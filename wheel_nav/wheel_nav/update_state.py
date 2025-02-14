@@ -15,7 +15,6 @@ class UpdateState(py_trees.behaviour.Behaviour):
         super().__init__(name)
         self.node = node
         
-
     def setup(self):
 
         """
@@ -25,15 +24,10 @@ class UpdateState(py_trees.behaviour.Behaviour):
             or validation of the behaviour's configuration.
         """
 
-        # self.node.get_logger().info(f"Setting up TrainingModeState with is_training = {self.is_training}")
-        
-
     def initialise(self):
         """
         This is called the first time the behaviour is ticked and anytime the status is not RUNNING thereafter.
         """
-        # self.node.get_logger().info(f"Determining Training Mode... is_training?")
-        
 
     def update(self):
         """
@@ -42,7 +36,13 @@ class UpdateState(py_trees.behaviour.Behaviour):
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
+        # self.node.get_logger().info(f'BEFOREEEEEEEEEE')
+        # self.node.get_logger().info(f'\n\nstate {self.node.state}, new_state {self.node.new_state}')
         self.node.state = self.node.new_state
+        # self.node.get_logger().info(f'AFTERRRRRR')
+        # self.node.get_logger().info(f'state {self.node.state}')
+        # self.node.get_logger().info(f'new_state {self.node.new_state}')
+        # self.node.get_logger().info(f'\n\n')
 
         return py_trees.common.Status.SUCCESS
         

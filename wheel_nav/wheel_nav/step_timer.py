@@ -19,7 +19,7 @@ class StepTimer(py_trees.behaviour.Behaviour):
         # Initialize the timer
         self.time_limit_reached = False
 
-        self.timer = self.node.create_timer(0.3, self.timer_callback) 
+        self.timer = self.node.create_timer(0.35, self.timer_callback) 
 
 
     def setup(self):

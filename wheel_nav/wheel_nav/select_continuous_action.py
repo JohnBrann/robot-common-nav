@@ -1,6 +1,7 @@
 import rclpy 
 import py_trees
 import random
+import torch
 import numpy as np
 
 from geometry_msgs.msg import Twist
@@ -17,7 +18,6 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
         """
         super().__init__(name)
         self.node = node
-        self.epsilon = 0.0
         self.publisher = self.node.create_publisher(Twist, '/cmd_vel', 10)
         
 
@@ -44,26 +44,73 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
 
         # Define action bounds
         linear_velocity_low = 0.0
-        linear_velocity_high = 0.2
+        linear_velocity_high = 0.22
         angular_velocity_low = -1.0
         angular_velocity_high = 1.0
 
-        # Get the action from the actor network (ensure it's compatible with numpy)
-        state = self.node.state  # The current state must be provided
-        action = self.node.actor(state).cpu().data.numpy().flatten()
+        # Convert state to PyTorch tensor & ensure correct shape
+        state = torch.tensor(self.node.state, dtype=torch.float32, device=self.node.device).unsqueeze(0)  # Shape: [1, state_dim]
 
-        # Scale and clip the actions to their valid ranges
-        linear_velocity = np.clip(action[0], linear_velocity_low, linear_velocity_high)
-        angular_velocity = np.clip(action[1], angular_velocity_low, angular_velocity_high)
+        # print(f'state shape before: {state.shape}')
 
-        # Add noise for exploration (during training)
-        if self.epsilon > 0.0:
-            linear_velocity += np.random.uniform(-self.epsilon, self.epsilon)
-            angular_velocity += np.random.uniform(-self.epsilon, self.epsilon)
+        # Ensure state is 2D (batch_size=1, state_dim)
+        if state.dim() == 1:
+            state = state.unsqueeze(0)  # Shape: [1, state_dim]
+        elif state.dim() == 3:  # If extra dimension exists, squeeze it
+            state = state.squeeze(0)  # Ensure shape is [1, state_dim]
 
-            # Clip again after adding noise
-            linear_velocity = np.clip(linear_velocity, linear_velocity_low, linear_velocity_high)
-            angular_velocity = np.clip(angular_velocity, angular_velocity_low, angular_velocity_high)
+        # print(f'state shape after: {state.shape}')
+
+
+        # Get action from the actor network
+        # Get action from the actor network
+
+        # print(f'STATTTTTTTTTTEEEEEEEEEEEEEEEEE PASSSSSSSSSSSEDDDDDDDDDDDDDDDDDDD: {state}')
+        action = self.node.actor(state)  # Output shape: [1, 2] (linear_velocity, angular_velocity)
+
+        # Ensure action shape is correct
+        if action.shape[1] != 2:
+            raise ValueError(f"Expected action shape [1, 2], but got {action.shape}")
+
+        # Define separate noise levels for linear and angular velocity
+        linear_noise_std = 0.05  # Small noise for linear velocity (10% of max range)
+        angular_noise_std = 0.3  # Larger noise for angular velocity (10% of max range)
+
+        # Create noise tensor
+        noise = torch.tensor(np.random.normal(0, [linear_noise_std, angular_noise_std], size=(1, 2)), 
+                            dtype=torch.float32, device=self.node.device)
+        
+        # self.node.get_logger().info(f"Before Noise Action: [{action}]")
+        # self.node.get_logger().info(f"Noise: [{noise}]")
+
+        # Add noise before applying bounds
+        action = action + noise
+        # self.node.get_logger().info(f"After Noise Action: [{action}]")
+
+        # Clamp actions within valid bounds
+        action[:, 0] = torch.clamp(action[:, 0], linear_velocity_low, linear_velocity_high)  # Linear velocity [0, 0.22]
+        action[:, 1] = torch.clamp(action[:, 1], angular_velocity_low, angular_velocity_high)  # Angular velocity [-1, 1]
+
+        # Convert to NumPy and extract values
+        action = action.squeeze(0).cpu().data.numpy()  # Shape: (2,)
+        linear_velocity, angular_velocity = action[0], action[1]
+
+        # Add additional exploration noise (during training)
+        # if self.node.epsilon > 0.45:
+        #     # linear_velocity += np.random.uniform(-self.epsilon, self.epsilon)
+        #     angular_velocity += np.random.uniform(-self.node.epsilon, self.node.epsilon)
+
+        #     # self.node.get_logger().info(f'EPSILONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+
+        #     # Clip again after noise
+        #     # linear_velocity = np.clip(linear_velocity, linear_velocity_low, linear_velocity_high)
+        #     angular_velocity = np.clip(angular_velocity, angular_velocity_low, angular_velocity_high)
+
+        self.node.get_logger().info(f"Action Selected by NN:  [{linear_velocity}][{angular_velocity}]")
+
+        selected_actions = np.array([linear_velocity, angular_velocity])
+        self.node.action = torch.tensor(selected_actions, dtype=torch.float32)
+
 
         # Publish the action
         self.publish_twist(linear_velocity, angular_velocity)
@@ -85,9 +132,9 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
             angular_velocity (float): Angular velocity for the TurtleBot
         """
         twist = Twist()
-        twist.linear.x = linear_velocity
-        twist.angular.z = angular_velocity
+        twist.linear.x = float(linear_velocity)
+        twist.angular.z = float(angular_velocity)
         self.publisher.publish(twist)
-        self.node.get_logger().info(
-            f"Published action: linear_velocity = {linear_velocity:.2f}, angular_velocity = {angular_velocity:.2f}"
-        )
+        # self.node.get_logger().info(
+        #     f"Published action: linear_velocity = {linear_velocity:.2f}, angular_velocity = {angular_velocity:.2f}"
+        # )

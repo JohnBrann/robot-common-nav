@@ -36,7 +36,7 @@ class AllowOptimizationState(py_trees.behaviour.Behaviour):
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-        if self.node.step_count % 50 == 0:
+        if self.node.step_count % 1 == 0:
             # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
             return py_trees.common.Status.FAILURE
 

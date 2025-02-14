@@ -36,7 +36,7 @@ class GetStateData(py_trees.behaviour.Behaviour):
         # These values should become dynamic to the environment in the future
         self.MAX_GOAL_DISTANCE = 5.0  # Example max distance to goal in meters
         self.MAX_SCAN_DISTANCE = 3.5  # Example max range of LiDAR in meters
-        self.MAX_VELOCITY = 1.0       # Example max velocity in m/s
+        self.MAX_VELOCITY = 0.22       # Example max velocity in m/s
 
         # Subscribe to the StepData topic
         self.subscription = self.node.create_subscription(
@@ -115,6 +115,8 @@ class GetStateData(py_trees.behaviour.Behaviour):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         state_tensor = state_tensor.to(device)
 
+        # self.node.get_logger().info(f"state_tensor: {state_tensor}")
+
         # Store tensor for later use
         self.node.new_state = state_tensor
 
@@ -143,6 +145,8 @@ class GetStateData(py_trees.behaviour.Behaviour):
         self.terminated = msg.terminated
         self.success = msg.success
         self.reward = msg.reward
+        
+        # self.node.get_logger().info(f'reward: {self.reward}')
 
         self.callback_called = True
 
