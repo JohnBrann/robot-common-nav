@@ -47,7 +47,7 @@ class EpisodeFailureState(py_trees.behaviour.Behaviour):
         # Truncation (other faillure)
         if self.node.episode_truncated():
             self.episode_failure = True
-            self.node.add_reward_to_episode(-100) # This is for truncated reward (fix in future to be tied direcly with reward function?)
+            self.node.add_reward_to_episode(-1500) # This is for truncated reward (fix in future to be tied direcly with reward function?)
         
         if self.episode_failure:
             self.node.get_logger().info(f"Episode was a FAILURE")

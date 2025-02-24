@@ -9,7 +9,7 @@ class Actor(nn.Module):
             super(Actor, self).__init__()
             self.fc1 = nn.Linear(state_size, 256)
             self.fc2 = nn.Linear(256, 256)
-            self.fc3 = nn.Linear(256, 256)
+            # self.fc3 = nn.Linear(256, 256)
             self.fc4 = nn.Linear(256, 2)  # Two outputs: linear and angular velocity
 
             self.tanh = nn.Tanh()  # For angular velocity (-1 to 1)
@@ -24,8 +24,8 @@ class Actor(nn.Module):
          # --- define forward pass here ---
         x1 = torch.relu(self.fc1(state))
         x2 = torch.relu(self.fc2(x1))
-        x3 = torch.relu(self.fc3(x2))
-        action = self.fc4(x3)  # [batch_size, 2] (linear_velocity, angular_velocity)
+        # x3 = torch.relu(self.fc3(x2))
+        action = self.fc4(x2)  # [batch_size, 2] (linear_velocity, angular_velocity)
 
         # print(f'action shape before scaling: {action.size()}')
 

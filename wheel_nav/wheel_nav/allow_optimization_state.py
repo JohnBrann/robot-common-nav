@@ -36,9 +36,17 @@ class AllowOptimizationState(py_trees.behaviour.Behaviour):
         Returns:
             py_trees.common.Status: SUCCESS if training is enabled, FAILURE otherwise
         """
-        if self.node.step_count % 1 == 0:
-            # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
-            return py_trees.common.Status.FAILURE
+
+        if self.node.is_discrete == True:
+
+            if self.node.step_count % 150 == 0:
+                # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
+                return py_trees.common.Status.FAILURE
+            
+        if self.node.is_discrete == False:
+            if self.node.step_count % 1 == 0:
+                # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")
+                return py_trees.common.Status.FAILURE
 
         if self.node.allow_optimization:
             # self.node.get_logger().info(f"ALLLLLLLOOOOOOOOOOOOWWWWWWWWWWWWWWWWWw")

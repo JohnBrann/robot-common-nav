@@ -1,6 +1,10 @@
 from wheel_nav_msgs.msg import GoalPosition  
 from wheel_nav_msgs.srv import GoalUpdate
 
+from gazebo_msgs.srv import SetEntityState
+from gazebo_msgs.msg import EntityState
+from geometry_msgs.msg import Pose, Point, Quaternion, Twist, Vector3
+
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
@@ -28,7 +32,7 @@ class GoalService(Node):
         self.goal_range = (-1.8, 1.8)
         self.possible_waypoints = [
             (1.0, 0.0), (-1.5, 1.2), (1.3, -1.1), (0.0, 1.5),
-            (-1.0, -1.0), (1.8, -0.5), (-0.2, 1.0), (0.5, 0.5),
+            (-1.0, -1.0), (1.7, -0.5), (-0.2, 1.0), (0.5, 0.5),
             (0.8, -1.5), (-1.2, 0.9), (1.6, 1.4), (-0.8, -1.3)
         ]
         

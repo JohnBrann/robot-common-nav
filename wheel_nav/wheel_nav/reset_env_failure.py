@@ -6,6 +6,10 @@ from wheel_nav_msgs.msg import StepData
 from wheel_nav_msgs.srv import GoalUpdate
 from std_srvs.srv import Empty  
 
+from gazebo_msgs.srv import SetEntityState
+from gazebo_msgs.msg import EntityState
+from geometry_msgs.msg import Pose, Point, Quaternion, Twist, Vector3
+
 
 import torch
 
@@ -23,6 +27,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
         # self.publisher = self.node.create_publisher(StepData, 'step_data', 10)
         self.reset_world_client = self.node.create_client(Empty, '/reset_world')
         self.goal_update_client = self.node.create_client(GoalUpdate, 'goal_update')  # Service client
+        self.marker_update_client = self.node.create_client(SetEntityState, '/gazebo/set_entity_state')
 
     def setup(self):
         """
@@ -83,7 +88,7 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
 
             # decay epsilon value
             if self.node.epsilon > 0.1:
-                self.node.epsilon = self.node.epsilon * 0.985
+                self.node.epsilon = self.node.epsilon * 0.99
                 self.node.epsilon_list.append(self.node.epsilon)
             
             # Create request object
@@ -99,13 +104,43 @@ class ResetEnvFailure(py_trees.behaviour.Behaviour):
             if future.result() is not None:
                 success = future.result().success
                 if success:
-                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({future.result().x} ,{future.result().y})")
+                    new_x = future.result().x
+                    new_y = future.result().y
+                    self.node.get_logger().info(f"\n\t\t\t\t\t    Goal updated successfully. New Goal: ({new_x} ,{new_y})")
                 else:
                     self.node.get_logger().error("Goal update failed")
                     return py_trees.common.Status.FAILURE
             else:
                 self.node.get_logger().error("Service call failed")
                 return py_trees.common.Status.FAILURE
+            
+
+            '''
+            Update Waypoint Marker location (same as new goal)
+
+            '''
+            marker_request = SetEntityState.Request()
+            marker_request.state = EntityState(
+                name='waypoint_marker',
+                pose=Pose(
+                    position=Point(x=new_x, y=new_y, z=0.1),
+                    orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+                ),
+                twist=Twist(
+                    linear=Vector3(x=0.0, y=0.0, z=0.0),
+                    angular=Vector3(x=0.0, y=0.0, z=0.0)
+                ),
+                reference_frame='world'
+            )
+             # Call the service
+            marker_future = self.marker_update_client.call_async(marker_request)
+            rclpy.spin_until_future_complete(self.node, marker_future)
+        
+            # if marker_future.result() is not None:
+            #     self.node.get_logger().info(f'Success: {marker_future.result().success}')
+            # else:
+            #     self.node.get_logger().error('Failed to call service')
+
 
             return py_trees.common.Status.SUCCESS
 

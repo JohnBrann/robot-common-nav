@@ -44,7 +44,7 @@ class SelectDiscreteAction(py_trees.behaviour.Behaviour):
             py_trees.common.Status: SUCCESS if action is selected, FAILURE otherwise
         """
         # list of possible actions to take
-        discrete_actions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        discrete_actions = [0, 1, 2, 3, 4,]#5, 6, 7, 8, 9]
 
         if random.random() < self.node.epsilon:
             selected_action = random.choice(discrete_actions)

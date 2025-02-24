@@ -6,9 +6,9 @@
     <arg name="use_sim_time" default="true" description="use_sim_time or not"/>
     <arg name="x_pose" default="-1.8" description="X position of the robot"/>
     <arg name="y_pose" default="-1.8" description="Y position of the robot"/>
-    <arg name="simulation" default="true" description="Set to 'true' if using  simulation, 'false' for real robot"/>
+    <arg name="simulation" default="true" description="Set to 'true' if using simulation, 'false' for real robot"/>
     <arg name="model" default="burger" description="Turtlebot3 Model"/>
-   
+
     <group if="$(var simulation)">
         <!-- Include Gazebo launch file and pass arguments if running in simulation -->
         <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch">
@@ -20,7 +20,22 @@
         </include>
     </group>
 
-    <node pkg="wheel_nav" exec="step_publisher" name="step_publisher" output="screen"></node>
-    <node pkg="wheel_nav" exec="goal_update_service" name="goal_update_service" output="screen"></node>
+    <!-- Declare absolute path manually -->
+    <let name="gazebo_sim_path" value="/home/user/ros2_nav_ws/src/robot-common-sim/gazebo_sim"/>
+
+    <arg name="entity" default="waypoint_marker" description="enitity for waypoint marker"/>
+
+    <!-- Spawn Waypoint Marker -->
+    <!-- <node pkg="gazebo_ros" exec="spawn_entity.py" name="spawn_waypoint_marker" output="screen">
+        <param name="use_sim_time" value="$(var use_sim_time)"/>
+        <param name="entity_name" value="waypoint_marker"/>
     
+        <param name="model_xml" value="$(var gazebo_sim_path)/models/waypoint_marker/model.sdf"/>
+        <param name="initial_pose" value="x: 0.0 y: 0.0 z: 0.0"/>
+        <param name="reference_frame" value="world"/>
+    </node> -->
+
+    <node pkg="wheel_nav" exec="step_publisher" name="step_publisher" output="screen"/>
+    <node pkg="wheel_nav" exec="goal_update_service" name="goal_update_service" output="screen"/>
+    <!-- <node pkg="wheel_nav" exec="waypoint_marker_node" name="waypoint_marker_node" output="screen"/> -->
 </launch>

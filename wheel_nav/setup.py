@@ -32,6 +32,7 @@ setup(
             'step_publisher = wheel_nav.step_publisher:main',
             'rl_bt = wheel_nav.rl_bt:main',
             'goal_update_service = wheel_nav.goal_update_service:main',
+            'waypoint_marker_node = wheel_nav.waypoint_marker_node:main',
         ],
     },
 )

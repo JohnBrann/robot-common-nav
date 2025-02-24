@@ -73,15 +73,15 @@ class SelectContinuousAction(py_trees.behaviour.Behaviour):
             raise ValueError(f"Expected action shape [1, 2], but got {action.shape}")
 
         # Define separate noise levels for linear and angular velocity
-        linear_noise_std = 0.05  # Small noise for linear velocity (10% of max range)
-        angular_noise_std = 0.3  # Larger noise for angular velocity (10% of max range)
+        linear_noise_std = 0.1  # Small noise for linear velocity (10% of max range)
+        angular_noise_std = 0.1  # Larger noise for angular velocity (10% of max range)
 
         # Create noise tensor
         noise = torch.tensor(np.random.normal(0, [linear_noise_std, angular_noise_std], size=(1, 2)), 
                             dtype=torch.float32, device=self.node.device)
         
         # self.node.get_logger().info(f"Before Noise Action: [{action}]")
-        # self.node.get_logger().info(f"Noise: [{noise}]")
+        self.node.get_logger().info(f"Noise: [{noise}]")
 
         # Add noise before applying bounds
         action = action + noise

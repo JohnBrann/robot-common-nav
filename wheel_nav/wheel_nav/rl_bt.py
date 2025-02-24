@@ -62,15 +62,15 @@ class RlBehaviorTree(Node):
         self.MODEL_FILE = os.path.join("src", f'ddpg_2.pt')
 
         # === Exploration/Exploitation settings === 
-        self.declare_parameter('epsilon', 0.5)
+        self.declare_parameter('epsilon', 1.0)
         self.epsilon = self.get_parameter('epsilon').get_parameter_value().double_value
 
         # === RL Model Parameters === 
         self.declare_parameter('fc1_nodes', 256)
         self.declare_parameter('num_states', 11)
-        self.declare_parameter('num_actions', 10)
-        self.declare_parameter('learning_rate_a', 0.005)
-        self.declare_parameter('discount_factor_g', 0.98)
+        self.declare_parameter('num_actions', 5)
+        self.declare_parameter('learning_rate_a', 0.00025)
+        self.declare_parameter('discount_factor_g', 0.99)
         self.declare_parameter('tau', 0.005)
 
         self.num_states = self.get_parameter('num_states').get_parameter_value().integer_value
@@ -84,7 +84,7 @@ class RlBehaviorTree(Node):
         self.critic_hidden_layer = 256
 
         # === Replay Memory === 
-        self.declare_parameter('replay_memory_size', 1000)
+        self.declare_parameter('replay_memory_size', 100000)
         self.declare_parameter('mini_batch_size', 64)
         self.replay_memory_size = self.get_parameter('replay_memory_size').get_parameter_value().integer_value
         self.mini_batch_size =  self.get_parameter('mini_batch_size').get_parameter_value().integer_value
@@ -93,7 +93,7 @@ class RlBehaviorTree(Node):
 
 
         # === Flags ===
-        self.declare_parameter('is_discrete', False)
+        self.declare_parameter('is_discrete', True)
         self.declare_parameter('is_training', True)
         self.is_discrete = self.get_parameter('is_discrete').get_parameter_value().bool_value
         self.is_training = self.get_parameter('is_training').get_parameter_value().bool_value

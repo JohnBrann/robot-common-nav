@@ -1,49 +1,95 @@
 import numpy as np
+import math
 
 def calc_reward(distance_to_goal, initial_distance_to_goal, angle_to_goal, min_obstacle_distance, 
-                reached_waypoint, terminated, linear_velocity, angular_velocity):
-    """
-    Reward function for TurtleBot navigation.
+                 reached_waypoint, terminated, linear_velocity, angular_velocity):
+
+    # Reward from angle (Rθ)
+    r_yaw = 5 * (1 - abs(angle_to_goal)) if -math.pi / 2 < angle_to_goal < math.pi / 2 else -5 * abs(angle_to_goal)
+
+    # Reward from distance (Rd)
+    r_distance = 2 * (distance_to_goal / initial_distance_to_goal) - 1
+    r_distance = max(min(r_distance, 2), 1)  # Ensure reward stays within [1, 2] or [2, 0] based on condition
+
+    # Total reward
+    reward = r_distance * r_yaw
+
+    return float(reward)
+
+
+# def calc_reward(distance_to_goal, initial_distance_to_goal, angle_to_goal, min_obstacle_distance, 
+#                 reached_waypoint, terminated, linear_velocity, angular_velocity):
+#     """
+#     Reward function for TurtleBot navigation.
     
-    - Encourages getting closer to the goal.
-    - Penalizes collisions and excessive angular velocity.
-    - Rewards reaching the waypoint.
-    - Encourages safe distances from obstacles.
-    """
+#     - Encourages getting closer to the goal.
+#     - Penalizes collisions and excessive angular velocity.
+#     - Rewards reaching the waypoint.
+#     - Encourages safe distances from obstacles.
+#     """
 
-    # Initialize reward
-    reward = 0.0
+#     # Initialize reward
+#     reward = 0.0
 
-    # Reward for progress towards the goal
-    progress_reward = (initial_distance_to_goal - distance_to_goal) * 10.0
-    reward += progress_reward
+#     # Reward for progress towards the goal
+#     progress_reward = (initial_distance_to_goal - distance_to_goal) * 5.0
+#     reward += progress_reward
 
-    # Penalize large deviation from goal direction
-    angle_penalty = -abs(angle_to_goal) * 0.5
-    reward += angle_penalty
+#     # Penalize large deviation from goal direction
+#     angle_penalty = -abs(angle_to_goal) * 10.0
+#     reward += angle_penalty
 
-    # Collision penalty
-    if min_obstacle_distance < 0.15:  # Threshold for collision risk
-        reward -= 50.0
+#     # Collision penalty
+#     if min_obstacle_distance < 0.15:  # Threshold for collision risk
+#         reward -= 50.0
 
-    # Encourage smooth movement
-    velocity_reward = linear_velocity * 5.0  # Encourages forward movement
-    reward += velocity_reward
+#     # Encourage smooth movement
+#     velocity_reward = linear_velocity * 3.0  # Encourages forward movement
+#     reward += velocity_reward
 
-    # Penalize excessive spinning
-    angular_penalty = -abs(angular_velocity) * 10.0
-    reward += angular_penalty
+#     # Penalize excessive spinning
+#     angular_penalty = -abs(angular_velocity) * 5.0
+#     reward += angular_penalty
 
-    # Reward reaching the waypoint
-    if reached_waypoint:
-        reward += 200.0  # Large reward for success
+#     # Reward reaching the waypoint
+#     if reached_waypoint:
+#         reward += 2000.0  # Large reward for success
 
-    # Termination penalty
-    if terminated:
-        reward -= 100.0  # Large penalty for failure
+#     # Termination penalty
+#     if terminated:
+#         reward -= 100.0  # Large penalty for failure
 
-    return reward
+#     return reward
 
+
+# def calc_reward(distance_to_goal, initial_distance_to_goal, angle_to_goal, min_obstacle_distance, 
+#                  reached_waypoint, terminated, linear_velocity, angular_velocity):
+
+#     # [-3.14, 0]
+#         r_yaw = -1 * abs(angle_to_goal)
+
+#         # [-4, 0]
+#         r_vangular = -1 * (angular_velocity**2)
+
+#         # [-1, 1]
+#         r_distance = (2 * initial_distance_to_goal) / (initial_distance_to_goal + distance_to_goal) - 1
+
+#         # [-20, 0]
+#         if min_obstacle_distance < 0.22:
+#             r_obstacle = -20
+#         else:
+#             r_obstacle = 0
+
+#         # [-2 * (2.2^2), 0]
+#         r_vlinear = -1 * (((0.22 - linear_velocity) * 10) ** 2)
+
+#         reward = r_yaw + r_distance + r_obstacle + r_vlinear + r_vangular - 1
+
+#         if reached_waypoint:
+#             reward += 2500
+#         elif terminated:
+#             reward -= 2000
+#         return float(reward)
 
 # def calc_reward(distance_to_goal, initial_distance_to_goal, angle_to_goal, min_obstacle_distance, 
 #                 reached_waypoint, terminated, linear_velocity, angular_velocity):
